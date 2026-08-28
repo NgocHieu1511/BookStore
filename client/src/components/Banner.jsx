@@ -1,11 +1,16 @@
 import SlickSlider from "react-slick";
 import { ChevronLeft, ChevronRight } from "lucide-react";
+import mainBanner1 from "../assets/img/mainBanner1.png";
+import mainBanner2 from "../assets/img/mainBanner2.png";
+import mainBanner3 from "../assets/img/mainBanner3.png";
+import extraBanner1 from "../assets/img/extraBanner1.png";
+import extraBanner2 from "../assets/img/extraBanner2.png";
 
 const Slider = SlickSlider.default ?? SlickSlider;
 
-// =============================
-// Previous Button
-// =============================
+// ========================================
+// Previous Arrow
+// ========================================
 function PrevArrow({ onClick }) {
   return (
     <button
@@ -13,48 +18,42 @@ function PrevArrow({ onClick }) {
       aria-label="Previous slide"
       className="
         absolute
-        left-[38px]
+        left-4
         top-1/2
         -translate-y-1/2
-        z-30
+        z-20
 
-        w-[56px]
-        h-[56px]
+        w-10
+        h-10
 
         flex
         items-center
         justify-center
 
-        rounded-[12px]
+        rounded-full
 
-        border
-        border-gray-300
+        bg-white/85
+        text-gray-800
 
-        bg-white/90
-
-        text-black
-
-        opacity-0
-        group-hover:opacity-100
+        shadow-md
 
         transition-all
-        duration-300
+        duration-200
 
-        hover:bg-black
-        hover:text-white
-        hover:border-black
+        hover:bg-white
+        hover:scale-105
 
         active:scale-95
       "
     >
-      <ChevronLeft size={24} strokeWidth={1.8} />
+      <ChevronLeft size={22} strokeWidth={2} />
     </button>
   );
 }
 
-// =============================
-// Next Button
-// =============================
+// ========================================
+// Next Arrow
+// ========================================
 function NextArrow({ onClick }) {
   return (
     <button
@@ -62,105 +61,72 @@ function NextArrow({ onClick }) {
       aria-label="Next slide"
       className="
         absolute
-        right-[38px]
+        right-4
         top-1/2
         -translate-y-1/2
-        z-30
+        z-20
 
-        w-[56px]
-        h-[56px]
+        w-10
+        h-10
 
         flex
         items-center
         justify-center
 
-        rounded-[12px]
+        rounded-full
 
-        border
-        border-gray-300
+        bg-white/85
+        text-gray-800
 
-        bg-white/90
-
-        text-black
-
-        opacity-0
-        group-hover:opacity-100
+        shadow-md
 
         transition-all
-        duration-300
+        duration-200
 
-        hover:bg-black
-        hover:text-white
-        hover:border-black
+        hover:bg-white
+        hover:scale-105
 
         active:scale-95
       "
     >
-      <ChevronRight size={24} strokeWidth={1.8} />
+      <ChevronRight size={22} strokeWidth={2} />
     </button>
   );
 }
 
+// ========================================
+// Banner
+// ========================================
 function Banner() {
+  // ========================================
+  // ẢNH SAU NÀY BẠN CHỈ CẦN THAY URL
+  // ========================================
   const slides = [
     {
-      badge: "Tuyển chọn",
-
-      title: (
-        <>
-          Cổ Điển
-          <br />
-          <span className="italic font-normal">Vượt Thời Gian</span>
-        </>
-      ),
-
-      description:
-        "Những kiệt tác văn học trường tồn cùng năm tháng, chứa đựng những giá trị nhân văn sâu sắc. Dành riêng cho những tâm hồn hoài niệm và yêu cái đẹp.",
-
-      button: "Xem bộ sưu tập",
-
-      image:
-        "https://images.unsplash.com/photo-1507842217343-583bb7270b66?q=80&w=2000&auto=format&fit=crop",
+      image: mainBanner1,
+      alt: "Banner 1",
     },
-
     {
-      badge: "Tuyển chọn",
-
-      title: (
-        <>
-          Mùa Hè
-          <br />
-          <span className="italic font-normal">Rực Rỡ</span>
-        </>
-      ),
-
-      description:
-        "Khám phá những vùng đất mới và những cuộc phiêu lưu đầy nắng gió qua từng trang sách. The Modern Sanctuary mang đến một mùa hè rực rỡ sắc màu văn chương.",
-
-      button: "Khám phá ngay",
-
-      image:
-        "https://images.unsplash.com/photo-1544947950-fa07a98d237f?q=80&w=2000&auto=format&fit=crop",
+      image: mainBanner2,
+      alt: "Banner 2",
     },
-
     {
-      badge: "Tuyển chọn",
+      image: mainBanner3,
+      alt: "Banner 3",
+    },
+  ];
 
-      title: (
-        <>
-          Những
-          <br />
-          <span className="italic font-normal">Trang Sách</span>
-        </>
-      ),
-
-      description:
-        "Đắm mình trong những câu chuyện đầy cảm hứng và khám phá những thế giới mới qua từng trang sách.",
-
-      button: "Khám phá ngay",
-
-      image:
-        "https://images.unsplash.com/photo-1495446815901-a7297e633e8d?q=80&w=2000&auto=format&fit=crop",
+  // ========================================
+  // Banner phụ bên phải
+  // ========================================
+  const subBanners = [
+    {
+      image: extraBanner1,
+      alt: "Banner phụ 1",
+    },
+    {
+      image: extraBanner2,
+      alt: "Banner phụ 2",
     },
   ];
 
@@ -169,7 +135,7 @@ function Banner() {
 
     infinite: true,
 
-    speed: 700,
+    speed: 500,
 
     slidesToShow: 1,
 
@@ -177,7 +143,7 @@ function Banner() {
 
     autoplay: true,
 
-    autoplaySpeed: 5000,
+    autoplaySpeed: 4000,
 
     pauseOnHover: true,
 
@@ -188,8 +154,25 @@ function Banner() {
     nextArrow: <NextArrow />,
 
     appendDots: (dots) => (
-      <div className="absolute bottom-[36px] left-0 right-0 z-30">
-        <ul className="flex justify-center items-center gap-[10px] m-0 p-0">
+      <div
+        className="
+          absolute
+          bottom-4
+          left-0
+          right-0
+          z-20
+        "
+      >
+        <ul
+          className="
+            flex
+            justify-center
+            items-center
+            gap-2
+            m-0
+            p-0
+          "
+        >
           {dots}
         </ul>
       </div>
@@ -198,247 +181,243 @@ function Banner() {
     customPaging: () => (
       <button
         className="
-          block
-          w-[8px]
-          h-[8px]
+          w-[10px]
+          h-[10px]
 
           rounded-full
 
-          bg-gray-400
+          bg-white/70
 
           transition-all
-          duration-300
+          duration-200
 
-          [&.slick-active]:bg-black
+          [&.slick-active]:bg-[#c92127]
+          [&.slick-active]:scale-110
         "
       />
     ),
   };
 
   return (
-    <section className="w-full overflow-hidden">
-      <div className="group relative">
-        <Slider {...settings}>
-          {slides.map((slide, index) => (
-            <div key={index}>
-              {/* =============================
-                  BANNER
-              ============================= */}
+    <section className="w-full">
+      <div
+        className="
+          w-full
+          max-w-[1230px]
+          mx-auto
 
-              <div
+          px-3
+          md:px-0
+        "
+      >
+        {/* ========================================
+            HERO GRID
+        ======================================== */}
+        <div
+          className="
+            grid
+            grid-cols-1
+            md:grid-cols-12
+
+            gap-4
+          "
+        >
+          {/* ========================================
+              MAIN BANNER
+          ======================================== */}
+          <section
+            className="
+              md:col-span-8
+
+              relative
+
+              h-[300px]
+              md:h-[400px]
+
+              overflow-hidden
+
+              rounded-xl
+
+              bg-white
+
+              shadow-sm
+            "
+          >
+            <Slider {...settings}>
+              {slides.map((slide, index) => (
+                <div key={index}>
+                  <div
+                    className="
+                      relative
+
+                      w-full
+                      h-[300px]
+                      md:h-[400px]
+
+                      overflow-hidden
+
+                      bg-gray-100
+                    "
+                  >
+                    {slide.image ? (
+                      <img
+                        src={slide.image}
+                        alt={slide.alt}
+                        className="
+                          w-full
+                          h-full
+
+                          object-cover
+                        "
+                      />
+                    ) : (
+                      /* ====================================
+                         PLACEHOLDER KHI CHƯA CÓ ẢNH
+                      ==================================== */
+                      <div
+                        className="
+                          w-full
+                          h-full
+
+                          flex
+                          items-center
+                          justify-center
+
+                          bg-gradient-to-r
+                          from-gray-100
+                          to-gray-200
+                        "
+                      >
+                        <div className="text-center">
+                          <div
+                            className="
+                              text-[#c92127]
+                              text-[28px]
+                              md:text-[40px]
+                              font-black
+                              italic
+                            "
+                          >
+                            BOOKSTORE.COM
+                          </div>
+
+                          <p
+                            className="
+                              mt-2
+                              text-gray-500
+                              text-sm
+                              md:text-base
+                            "
+                          >
+                            Banner chính
+                          </p>
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                </div>
+              ))}
+            </Slider>
+          </section>
+
+          {/* ========================================
+              SUB BANNERS
+          ======================================== */}
+          <section
+            className="
+              md:col-span-4
+
+              flex
+              flex-col
+
+              gap-4
+            "
+          >
+            {subBanners.map((banner, index) => (
+              <a
+                href="#"
+                key={index}
                 className="
-                  relative
+                  block
+
                   w-full
 
-                  h-[700px]
+                  h-[142px]
+                  md:h-[192px]
 
                   overflow-hidden
 
+                  rounded-xl
+
                   bg-white
+
+                  shadow-sm
+
+                  transition-all
+                  duration-300
+
+                  hover:shadow-md
+                  hover:-translate-y-[1px]
                 "
               >
-                {/* =============================
-                    BACKGROUND IMAGE
-                ============================= */}
+                {banner.image ? (
+                  <img
+                    src={banner.image}
+                    alt={banner.alt}
+                    className="
+                      w-full
+                      h-full
 
-                <div
-                  className="
-                    absolute
-                    inset-0
+                      object-cover
 
-                    bg-cover
-                    bg-center
+                      transition-transform
+                      duration-500
 
-                    scale-[1.02]
-
-                    transition-transform
-                    duration-700
-                  "
-                  style={{
-                    backgroundImage: `url("${slide.image}")`,
-                  }}
-                />
-
-                {/* =============================
-                    WHITE OVERLAY
-                ============================= */}
-
-                <div
-                  className="
-                    absolute
-                    inset-0
-
-                    bg-white/55
-                  "
-                />
-
-                {/* =============================
-                    LEFT WHITE GRADIENT
-                ============================= */}
-
-                <div
-                  className="
-                    absolute
-                    inset-0
-
-                    bg-gradient-to-r
-
-                    from-white
-                    from-[0%]
-
-                    via-white/95
-                    via-[32%]
-
-                    via-white/55
-                    via-[55%]
-
-                    to-transparent
-                    to-[85%]
-                  "
-                />
-
-                {/* =============================
-                    CONTENT
-                ============================= */}
-
-                <div
-                  className="
-                    relative
-                    z-10
-
-                    h-full
-
-                    flex
-                    items-center
-                  "
-                >
-                  {/* Container */}
+                      hover:scale-[1.02]
+                    "
+                  />
+                ) : (
                   <div
                     className="
                       w-full
-                      max-w-[1415px]
+                      h-full
 
-                      mx-auto
+                      flex
+                      items-center
+                      justify-center
 
-                      px-6
+                      bg-gray-100
                     "
                   >
-                    <div className="w-[600px]">
-                      {/* =============================
-                          BADGE
-                      ============================= */}
-
+                    <div className="text-center">
                       <div
                         className="
-                          inline-flex
-                          items-center
-
-                          px-[18px]
-                          py-[8px]
-
-                          rounded-full
-
-                          bg-[#fff7ed]
-
-                          mb-[46px]
+                          text-[#c92127]
+                          text-[20px]
+                          md:text-[26px]
+                          font-black
+                          italic
                         "
                       >
-                        <span
-                          className="
-                            text-[11px]
-
-                            font-semibold
-
-                            tracking-[0.14em]
-
-                            uppercase
-
-                            text-[#a85b18]
-                          "
-                        >
-                          {slide.badge}
-                        </span>
+                        BOOKSTORE.COM
                       </div>
-
-                      {/* =============================
-                          TITLE
-                      ============================= */}
-
-                      <h1
-                        className="
-                          font-serif
-
-                          text-[58px]
-
-                          leading-[1.02]
-
-                          tracking-[-0.03em]
-
-                          text-black
-
-                          mb-[42px]
-                        "
-                      >
-                        {slide.title}
-                      </h1>
-
-                      {/* =============================
-                          DESCRIPTION
-                      ============================= */}
 
                       <p
                         className="
-                          w-[600px]
-
-                          text-[17px]
-
-                          leading-[1.65]
-
-                          text-gray-700
-
-                          mb-[52px]
+                          mt-1
+                          text-gray-500
+                          text-xs
                         "
                       >
-                        {slide.description}
+                        Banner phụ {index + 1}
                       </p>
-
-                      {/* =============================
-                          BUTTON
-                      ============================= */}
-
-                      <button
-                        className="
-                          min-w-[207px]
-
-                          h-[67px]
-
-                          px-[32px]
-
-                          bg-black
-
-                          text-white
-
-                          text-[14px]
-
-                          font-semibold
-
-                          hover:bg-gray-800
-
-                          transition-all
-                          duration-300
-
-                          active:scale-[0.98]
-                        "
-                      >
-                        {slide.button}
-                      </button>
                     </div>
                   </div>
-                </div>
-              </div>
-            </div>
-          ))}
-        </Slider>
+                )}
+              </a>
+            ))}
+          </section>
+        </div>
       </div>
     </section>
   );

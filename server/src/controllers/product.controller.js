@@ -151,14 +151,15 @@ class ProductController {
   async getProductById(req, res) {
     const { id } = req.params;
     const product = await productModel.findById(id);
-    const feedbacks = await feedbackModel.find({ productId: id });
+    // const feedbacks = await feedbackModel.find({ productId: id });
     if (!product) {
       throw new NotFoundError("Sản phẩm không tồn tại");
     }
 
     return new OK({
       message: "Lấy thông tin sản phẩm thành công",
-      metadata: { product, feedbacks },
+      // metadata: { product, feedbacks },
+      metadata: { product },
     }).send(res);
   }
 

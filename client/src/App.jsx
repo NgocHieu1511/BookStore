@@ -3,6 +3,7 @@ import "./App.css";
 import Header from "./components/Header";
 import Banner from "./components/Banner";
 import HomePage from "./components/HomePage";
+import Footer from "./components/Footer";
 
 function App() {
   return (
@@ -12,6 +13,7 @@ function App() {
       </header>
       <Banner />
       <HomePage />
+      <Footer />
     </div>
   );
 }
