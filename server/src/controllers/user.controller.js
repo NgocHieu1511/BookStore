@@ -161,17 +161,18 @@ class UserController {
 
     res.cookie("tokenForgotPassword", tokenForgotPassword, {
       httpOnly: false,
-      secure: true,
+      // secure: true,
+      secure: false,
       maxAge: 5 * 60 * 1000, // 5 minutes
       sameSite: "strict",
     });
+
+    await SendMailForgotPassword(email, otp);
 
     await otpModel.create({
       otp,
       email,
     });
-
-    await SendMailForgotPassword(email, otp);
 
     return new OK({
       message: "Mã OTP đã được gửi đến email của bạn",

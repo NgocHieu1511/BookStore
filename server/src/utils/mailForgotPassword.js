@@ -16,7 +16,10 @@ oAuth2Client.setCredentials({ refresh_token: REFRESH_TOKEN });
 
 const SendMailForgotPassword = async (email, otp) => {
   try {
-    const accessToken = await oAuth2Client.getAccessToken();
+        const { token: accessToken } = await oAuth2Client.getAccessToken();
+        if (!accessToken) {
+            throw new Error("Không lấy được Gmail access token");
+        }
     const transport = nodemailer.createTransport({
       service: "gmail",
       auth: {
@@ -123,6 +126,7 @@ const SendMailForgotPassword = async (email, otp) => {
     console.log("Forgot password email sent:", info.messageId);
   } catch (error) {
     console.log("Error sending forgot password email:", error);
+        throw error;
   }
 };
 
