@@ -89,14 +89,15 @@ class UserController {
   }
 
   async getAuth(req, res) {
-    const { id } = req.user || {};
-    new OK({
-      message: "Xác thực thành công",
-      metadata: {
-        userId: id,
-      },
-    }).send(res);
-  }
+  const userId = req.user;
+
+  new OK({
+    message: "Xác thực thành công",
+    metadata: {
+      userId: userId,
+    },
+  }).send(res);
+}
   async authUser(req, res) {
     const userId = req.user;
     const findUser = await userModel.findById(userId);
@@ -210,6 +211,29 @@ class UserController {
 
     return new OK({
       message: "Khôi phục mật khẩu thành công",
+      metadata: true,
+    }).send(res);
+  }
+  async refreshToken(req, res) {
+    const refreshToken = req.cookies.refreshToken;
+
+    if (!refreshToken) {
+      throw new AuthFailureError("Vui lòng đăng nhập lại");
+    }
+    const decoded = await verifyToken(refreshToken);
+    if (!decoded) {
+      throw new AuthFailureError("Vui lòng đăng nhập lại");
+    }
+    const accessToken = createAccessToken({ id: decoded.id });
+    res.cookie("accessToken", accessToken, {
+      httpOnly: true,
+      secure: true,
+      maxAge: 1 * 24 * 60 * 60 * 1000, // 1 day
+      sameSite: "strict",
+    });
+
+    return new OK({
+      message: "Refresh token thành công",
       metadata: true,
     }).send(res);
   }

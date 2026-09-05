@@ -5,11 +5,12 @@ const usersController = require("../controllers/user.controller");
 const { authUser } = require("../middleware/authUser");
 router.post("/register", AsyncHandler(usersController.register));
 router.post("/login", AsyncHandler(usersController.login));
-router.get("/auth", authUser, AsyncHandler(usersController.getAuth));
+router.get('/auth', authUser, AsyncHandler(usersController.authUser));
 router.get("/logout", authUser, AsyncHandler(usersController.logout));
 router.post("/forgot-password", AsyncHandler(usersController.forgotPassword));
 router.post(
   "/verify-forgot-password",
   AsyncHandler(usersController.verifyForgotPassword),
 );
+router.get("/refresh-token", AsyncHandler(usersController.refreshToken));
 module.exports = router;

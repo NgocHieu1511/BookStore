@@ -2,7 +2,9 @@ import Header from "../components/Header";
 import Footer from "../components/Footer";
 import { useState } from "react";
 import { Eye, EyeOff } from "lucide-react";
-// import { requestLogin } from "../config/userRequest";
+import { requestLogin ,requestRegister, } from "../config/userRequest";
+import { useNavigate } from "react-router-dom";
+import { message } from "antd";
 
 function LoginUser() {
   // =========================
@@ -10,23 +12,30 @@ function LoginUser() {
   // =========================
   const [activeTab, setActiveTab] = useState("login");
 
+  const navigate = useNavigate();
+
   const [showLoginPassword, setShowLoginPassword] = useState(false);
   const [showRegisterPassword, setShowRegisterPassword] = useState(false);
 
-  const [loginData, setLoginData] = useState({
-    username: "",
-    password: "",
-  });
-
-  const [registerData, setRegisterData] = useState({
-    phone: "",
-    otp: "",
-    password: "",
-    otpMethod: "sms",
-  });
+  const [loading, setLoading] = useState(false);
 
   // =========================
-  // LOGIN INPUT
+  // LOGIN DATA
+  // =========================
+  const [loginData, setLoginData] = useState({
+    email: "",
+    password: "",
+  });
+  // Register data
+  const [registerData, setRegisterData] = useState({
+  fullName: "",
+  email: "",
+  password: "",
+  confirmPassword: "",
+});
+
+  // =========================
+  // HANDLE LOGIN INPUT
   // =========================
   const handleLoginChange = (e) => {
     const { name, value } = e.target;
@@ -36,40 +45,107 @@ function LoginUser() {
       [name]: value,
     }));
   };
-
-  // =========================
-  // REGISTER INPUT
-  // =========================
+  // handle register input
   const handleRegisterChange = (e) => {
-    const { name, value } = e.target;
+  const { name, value } = e.target;
 
-    setRegisterData((prev) => ({
-      ...prev,
-      [name]: value,
-    }));
-  };
+  setRegisterData((prev) => ({
+    ...prev,
+    [name]: value,
+  }));
+};
 
   // =========================
-  // LOGIN
+  // HANDLE LOGIN
   // =========================
-  const handleLogin = (e) => {
+  const onFinish = async (e) => {
     e.preventDefault();
 
-    console.log("Login data:", loginData);
+    // Kiểm tra dữ liệu
+    if (!loginData.email || !loginData.password) {
+      message.error("Vui lòng nhập đầy đủ email và mật khẩu!");
+      return;
+    }
 
-    // Sau này gọi API login ở đây
+    setLoading(true);
+
+    try {
+      await requestLogin(loginData);
+
+      message.success("Đăng nhập thành công!");
+
+      setTimeout(() => {
+        navigate("/");
+        window.location.reload();
+      }, 1000);
+    } catch (error) {
+      message.error(error.response?.data?.message || "Đăng nhập thất bại!");
+
+      console.error("Login error:", error);
+    } finally {
+      setLoading(false);
+    }
   };
+  // handle register submit
+  const handleRegister = async (e) => {
+  e.preventDefault();
 
   // =========================
-  // REGISTER
+  // VALIDATE
   // =========================
-  const handleRegister = (e) => {
-    e.preventDefault();
 
-    console.log("Register data:", registerData);
+  if (
+    !registerData.fullName ||
+    !registerData.email ||
+    !registerData.password ||
+    !registerData.confirmPassword
+  ) {
+    message.error("Vui lòng nhập đầy đủ thông tin!");
+    return;
+  }
 
-    // Sau này gọi API register ở đây
-  };
+  if (registerData.password.length < 6) {
+    message.error("Mật khẩu phải có ít nhất 6 ký tự!");
+    return;
+  }
+
+  if (registerData.password !== registerData.confirmPassword) {
+    message.error("Mật khẩu xác nhận không khớp!");
+    return;
+  }
+
+  setLoading(true);
+
+  try {
+    await requestRegister({
+      fullName: registerData.fullName,
+      email: registerData.email,
+      password: registerData.password,
+    });
+
+    message.success("Đăng ký thành công!");
+
+    setRegisterData({
+      fullName: "",
+      email: "",
+      password: "",
+      confirmPassword: "",
+    });
+
+    setTimeout(() => {
+      setActiveTab("login");
+    }, 1000);
+  } catch (error) {
+    console.error("Register error:", error);
+
+    message.error(
+      error.response?.data?.message ||
+        "Đăng ký thất bại!"
+    );
+  } finally {
+    setLoading(false);
+  }
+};
 
   return (
     <div className="flex min-h-screen flex-col bg-[#f2f4f5] text-[#191c1d]">
@@ -143,23 +219,24 @@ function LoginUser() {
             ===================================================== */}
             {activeTab === "login" && (
               <div>
-                <form onSubmit={handleLogin} className="space-y-5">
-                  {/* USERNAME */}
+                {/* LOGIN FORM */}
+                <form onSubmit={onFinish} className="space-y-5">
+                  {/* EMAIL */}
                   <div>
                     <label
-                      htmlFor="username"
-                      className="mb-2 block text-sm font-semibold text-[#191c1d]"
+                      htmlFor="email"
+                      className="mb-2 block text-sm font-semibold"
                     >
-                      Số điện thoại/Email
+                      Email
                     </label>
 
                     <input
-                      id="username"
-                      name="username"
-                      type="text"
-                      value={loginData.username}
+                      id="email"
+                      name="email"
+                      type="email"
+                      value={loginData.email}
                       onChange={handleLoginChange}
-                      placeholder="Nhập số điện thoại hoặc email"
+                      placeholder="Nhập email"
                       className="
                         h-11
                         w-full
@@ -213,6 +290,7 @@ function LoginUser() {
                         "
                       />
 
+                      {/* SHOW / HIDE PASSWORD */}
                       <button
                         type="button"
                         onClick={() => setShowLoginPassword(!showLoginPassword)}
@@ -253,6 +331,7 @@ function LoginUser() {
                   {/* LOGIN BUTTON */}
                   <button
                     type="submit"
+                    disabled={loading}
                     className="
                       mt-2
                       h-12
@@ -265,9 +344,11 @@ function LoginUser() {
                       transition-colors
                       hover:bg-[#a30014]
                       active:scale-[0.99]
+                      disabled:cursor-not-allowed
+                      disabled:opacity-60
                     "
                   >
-                    Đăng nhập
+                    {loading ? "Đang đăng nhập..." : "Đăng nhập"}
                   </button>
                 </form>
 
@@ -362,207 +443,201 @@ function LoginUser() {
             {/* =====================================================
                 REGISTER
             ===================================================== */}
-            {activeTab === "register" && (
-              <div>
-                <form onSubmit={handleRegister} className="space-y-5">
-                  {/* PHONE */}
-                  <div>
-                    <label
-                      htmlFor="phone"
-                      className="mb-2 block text-sm font-semibold"
-                    >
-                      Số điện thoại
-                    </label>
+           {activeTab === "register" && (
+  <div>
+    <form
+      onSubmit={handleRegister}
+      className="space-y-5"
+    >
+      {/* FULL NAME */}
+      <div>
+        <label
+          htmlFor="fullName"
+          className="mb-2 block text-sm font-semibold"
+        >
+          Họ và tên
+        </label>
 
-                    <input
-                      id="phone"
-                      name="phone"
-                      type="tel"
-                      value={registerData.phone}
-                      onChange={handleRegisterChange}
-                      placeholder="Nhập số điện thoại"
-                      className="
-                        h-11
-                        w-full
-                        rounded
-                        border
-                        border-gray-300
-                        bg-[#f2f4f5]
-                        px-4
-                        text-sm
-                        outline-none
-                        transition
-                        focus:border-[#a30014]
-                        focus:ring-1
-                        focus:ring-[#a30014]
-                      "
-                    />
-                  </div>
+        <input
+          id="fullName"
+          name="fullName"
+          type="text"
+          value={registerData.fullName}
+          onChange={handleRegisterChange}
+          placeholder="Nhập họ và tên"
+          className="
+            h-11
+            w-full
+            rounded
+            border
+            border-gray-300
+            bg-[#f2f4f5]
+            px-4
+            text-sm
+            outline-none
+            transition
+            focus:border-[#a30014]
+            focus:ring-1
+            focus:ring-[#a30014]
+          "
+        />
+      </div>
 
-                  {/* OTP METHOD */}
-                  <div className="flex gap-6">
-                    <label className="flex cursor-pointer items-center gap-2 text-sm">
-                      <input
-                        type="radio"
-                        name="otpMethod"
-                        value="sms"
-                        checked={registerData.otpMethod === "sms"}
-                        onChange={handleRegisterChange}
-                        className="accent-[#a30014]"
-                      />
+      {/* EMAIL */}
+      <div>
+        <label
+          htmlFor="register-email"
+          className="mb-2 block text-sm font-semibold"
+        >
+          Email
+        </label>
 
-                      <span>SMS</span>
-                    </label>
+        <input
+          id="register-email"
+          name="email"
+          type="email"
+          value={registerData.email}
+          onChange={handleRegisterChange}
+          placeholder="Nhập email"
+          className="
+            h-11
+            w-full
+            rounded
+            border
+            border-gray-300
+            bg-[#f2f4f5]
+            px-4
+            text-sm
+            outline-none
+            transition
+            focus:border-[#a30014]
+            focus:ring-1
+            focus:ring-[#a30014]
+          "
+        />
+      </div>
 
-                    <label className="flex cursor-pointer items-center gap-2 text-sm">
-                      <input
-                        type="radio"
-                        name="otpMethod"
-                        value="zalo"
-                        checked={registerData.otpMethod === "zalo"}
-                        onChange={handleRegisterChange}
-                        className="accent-[#a30014]"
-                      />
+      {/* PASSWORD */}
+      <div>
+        <label
+          htmlFor="register-password"
+          className="mb-2 block text-sm font-semibold"
+        >
+          Mật khẩu
+        </label>
 
-                      <span>Zalo</span>
-                    </label>
-                  </div>
+        <div className="relative">
+          <input
+            id="register-password"
+            name="password"
+            type={showRegisterPassword ? "text" : "password"}
+            value={registerData.password}
+            onChange={handleRegisterChange}
+            placeholder="Nhập mật khẩu"
+            className="
+              h-11
+              w-full
+              rounded
+              border
+              border-gray-300
+              bg-[#f2f4f5]
+              pl-4
+              pr-12
+              text-sm
+              outline-none
+              transition
+              focus:border-[#a30014]
+              focus:ring-1
+              focus:ring-[#a30014]
+            "
+          />
 
-                  {/* OTP */}
-                  <div>
-                    <label
-                      htmlFor="otp"
-                      className="mb-2 block text-sm font-semibold"
-                    >
-                      Mã xác nhận OTP
-                    </label>
-
-                    <div className="relative">
-                      <input
-                        id="otp"
-                        name="otp"
-                        type="text"
-                        value={registerData.otp}
-                        onChange={handleRegisterChange}
-                        placeholder="Nhập mã OTP"
-                        className="
-                          h-11
-                          w-full
-                          rounded
-                          border
-                          border-gray-300
-                          bg-[#f2f4f5]
-                          pl-4
-                          pr-24
-                          text-sm
-                          outline-none
-                          transition
-                          focus:border-[#a30014]
-                          focus:ring-1
-                          focus:ring-[#a30014]
-                        "
-                      />
-
-                      <button
-                        type="button"
-                        className="
-                          absolute
-                          right-3
-                          top-1/2
-                          -translate-y-1/2
-                          text-xs
-                          font-bold
-                          uppercase
-                          tracking-wide
-                          text-[#a30014]
-                          hover:text-[#c92127]
-                        "
-                      >
-                        Gửi mã
-                      </button>
-                    </div>
-                  </div>
-
-                  {/* REGISTER PASSWORD */}
-                  <div>
-                    <label
-                      htmlFor="register-password"
-                      className="mb-2 block text-sm font-semibold"
-                    >
-                      Mật khẩu
-                    </label>
-
-                    <div className="relative">
-                      <input
-                        id="register-password"
-                        name="password"
-                        type={showRegisterPassword ? "text" : "password"}
-                        value={registerData.password}
-                        onChange={handleRegisterChange}
-                        placeholder="Nhập mật khẩu"
-                        className="
-                          h-11
-                          w-full
-                          rounded
-                          border
-                          border-gray-300
-                          bg-[#f2f4f5]
-                          pl-4
-                          pr-12
-                          text-sm
-                          outline-none
-                          transition
-                          focus:border-[#a30014]
-                          focus:ring-1
-                          focus:ring-[#a30014]
-                        "
-                      />
-
-                      <button
-                        type="button"
-                        onClick={() =>
-                          setShowRegisterPassword(!showRegisterPassword)
-                        }
-                        className="
-                          absolute
-                          right-3
-                          top-1/2
-                          -translate-y-1/2
-                          text-gray-500
-                          hover:text-[#a30014]
-                        "
-                      >
-                        {showRegisterPassword ? (
-                          <EyeOff size={20} />
-                        ) : (
-                          <Eye size={20} />
-                        )}
-                      </button>
-                    </div>
-                  </div>
-
-                  {/* REGISTER BUTTON */}
-                  <button
-                    type="submit"
-                    className="
-                      mt-2
-                      h-12
-                      w-full
-                      rounded-lg
-                      bg-[#c92127]
-                      text-base
-                      font-semibold
-                      text-white
-                      transition
-                      hover:bg-[#a30014]
-                      active:scale-[0.99]
-                    "
-                  >
-                    Đăng ký
-                  </button>
-                </form>
-              </div>
+          <button
+            type="button"
+            onClick={() =>
+              setShowRegisterPassword(
+                !showRegisterPassword
+              )
+            }
+            className="
+              absolute
+              right-3
+              top-1/2
+              -translate-y-1/2
+              text-gray-500
+              hover:text-[#a30014]
+            "
+          >
+            {showRegisterPassword ? (
+              <EyeOff size={20} />
+            ) : (
+              <Eye size={20} />
             )}
+          </button>
+        </div>
+      </div>
+
+      {/* CONFIRM PASSWORD */}
+      <div>
+        <label
+          htmlFor="confirm-password"
+          className="mb-2 block text-sm font-semibold"
+        >
+          Xác nhận mật khẩu
+        </label>
+
+        <input
+          id="confirm-password"
+          name="confirmPassword"
+          type="password"
+          value={registerData.confirmPassword}
+          onChange={handleRegisterChange}
+          placeholder="Nhập lại mật khẩu"
+          className="
+            h-11
+            w-full
+            rounded
+            border
+            border-gray-300
+            bg-[#f2f4f5]
+            px-4
+            text-sm
+            outline-none
+            transition
+            focus:border-[#a30014]
+            focus:ring-1
+            focus:ring-[#a30014]
+          "
+        />
+      </div>
+
+      {/* REGISTER BUTTON */}
+      <button
+        type="submit"
+        disabled={loading}
+        className="
+          mt-2
+          h-12
+          w-full
+          rounded-lg
+          bg-[#c92127]
+          text-base
+          font-semibold
+          text-white
+          transition
+          hover:bg-[#a30014]
+          active:scale-[0.99]
+          disabled:cursor-not-allowed
+          disabled:opacity-60
+        "
+      >
+        {loading
+          ? "Đang đăng ký..."
+          : "Đăng ký"}
+      </button>
+    </form>
+  </div>
+)}
 
             {/* =========================
                 TERMS

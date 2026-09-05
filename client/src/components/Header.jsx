@@ -7,10 +7,18 @@ import {
   ChevronDown,
 } from "lucide-react";
 import { useState } from "react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
+import { Avatar, Dropdown, message } from 'antd';
+import {  UserOutlined, DownOutlined} from '@ant-design/icons';
+import { useStore } from "../hooks/useStore";
+import { requestLogout } from "../config/userRequest";
 
 function Header() {
   const [active, setActive] = useState("Sách Trong Nước");
+  const [showAccount, setShowAccount] = useState(false);
+  const { dataUser } = useStore();
+  const navigate = useNavigate();
+  console.log("dataUser:", dataUser);
 
   const menus = [
     "Sách Trong Nước",
@@ -19,6 +27,26 @@ function Header() {
     "Đồ Chơi",
     "Làm Đẹp - Sức Khỏe",
   ];
+  const HandleLogout = async() => {
+      try {
+        await requestLogout();
+            setTimeout(() => {
+                window.location.reload();
+            }, 1000);
+            navigate('/');
+      } catch (error) {
+        message.error(error);
+      }
+    }
+      const userMenuItems = [
+        { key: 'profile', label: 'Thông tin cá nhân', href: '/info-user' },
+        { key: 'bookings', label: 'Đơn hàng của tôi', href: '/bookings' },
+        { key: 'warranty', label: 'Quản lý bảo hành', href: '/warranty' },
+        { key: 'logout', label: 'Đăng xuất', onClick: HandleLogout},
+
+    ];
+    
+
 
   return (
     <header className="w-full sticky top-0 z-50 bg-white shadow-sm">
@@ -51,23 +79,23 @@ function Header() {
       <div className="max-w-[1230px] mx-auto px-4 md:px-6">
         <div className="py-4 border-b border-gray-200">
           <div className="flex items-center justify-between gap-5">
-            {/* LOGO */}
+            {/* ================= LOGO ================= */}
             <Link
               className="
-                  shrink-0
-                  text-[26px]
-                  md:text-[32px]
-                  font-black
-                  italic
-                  text-[#c92127]
-                  tracking-tight
-                "
+                shrink-0
+                text-[26px]
+                md:text-[32px]
+                font-black
+                italic
+                text-[#c92127]
+                tracking-tight
+              "
               to="/"
             >
               Bookstore.com
             </Link>
 
-            {/* SEARCH */}
+            {/* ================= SEARCH ================= */}
             <div className="hidden md:flex flex-1 max-w-[650px]">
               <div className="flex w-full">
                 <input
@@ -109,9 +137,9 @@ function Header() {
               </div>
             </div>
 
-            {/* ACTIONS */}
+            {/* ================= ACTIONS ================= */}
             <div className="flex items-center gap-4 md:gap-6 text-gray-700">
-              {/* Notification */}
+              {/* ================= NOTIFICATION ================= */}
               <button
                 className="
                   flex
@@ -134,7 +162,7 @@ function Header() {
                 </span>
               </button>
 
-              {/* Cart */}
+              {/* ================= CART ================= */}
               <button
                 className="
                   relative
@@ -153,57 +181,130 @@ function Header() {
                   className="group-hover:scale-110 transition-transform"
                 />
 
-                {/* Badge */}
-                <span
-                  className="
-                    absolute
-                    -top-1
-                    right-0
-                    min-w-[18px]
-                    h-[18px]
-                    px-1
-                    flex
-                    items-center
-                    justify-center
-                    bg-[#c92127]
-                    text-white
-                    text-[10px]
-                    font-bold
-                    rounded-full
-                    border-2
-                    border-white
-                  "
-                >
-                  3
-                </span>
+               
 
                 <span className="hidden md:block text-[12px] mt-1">
                   Giỏ hàng
                 </span>
               </button>
 
-              {/* Account */}
-              <button
-                className="
-                  flex
-                  flex-col
-                  items-center
-                  justify-center
-                  hover:text-[#c92127]
-                  transition-colors
-                  group
-                "
-              >
-                <UserRound
-                  size={27}
-                  strokeWidth={1.8}
-                  className="group-hover:scale-110 transition-transform"
-                />
+              {/* ================= ACCOUNT ================= */}
 
-                <span className="hidden md:block text-[12px] mt-1">
-                  Tài khoản
-                </span>
-              </button>
+              <div className="relative">
+                
+                {/* Account Button */}
+               {dataUser ? (
+   <Dropdown
+    menu={{ items: userMenuItems }}
+                                
+                                placement="bottomRight"
+                                trigger={['click']}
+                              popupRender={(menu) => (
+                                    <div className="bg-white rounded-lg shadow-xl border border-gray-100 mt-1 min-w-[200px] overflow-hidden">
+                                        <div className="px-4 py-3 border-b border-gray-100">
+                                            <p className="font-medium text-gray-800">
+                                                {dataUser.user.fullName || 'Người dùng'}
+                                            </p>
+
+                                            <p className="text-xs text-gray-500 truncate">{dataUser.email}</p>
+                                        </div>
+                                        {menu}
+                                    </div>
+                                )}
+                            >
+                                <div className="flex items-center cursor-pointer gap-2">
+                                    <Avatar
+                                        icon={<UserOutlined />}
+                                        className="bg-green-500 flex items-center justify-center"
+                                        size="large"
+                                        src={`${import.meta.env.VITE_API_URL}/uploads/avatars/${dataUser.avatar}`}
+                                    />
+                                    <div className="hidden md:block">
+                                        <span className="text-sm font-medium">{dataUser.user.fullName || 'Người dùng'}</span>
+                                        <DownOutlined className="text-xs ml-1" />
+                                    </div>
+                                </div>
+                            </Dropdown>
+) : (
+  <button
+    onClick={() => setShowAccount(!showAccount)}
+    className="flex flex-col items-center justify-center hover:text-[#c92127] transition-colors group"
+  >
+    <UserRound
+      size={27}
+      strokeWidth={1.8}
+      className="group-hover:scale-110 transition-transform"
+    />
+
+    <span className="hidden md:block text-[12px] mt-1">
+      Tài khoản
+    </span>
+  </button>
+)}
+                 
+               
+
+                {/* ================= ACCOUNT DROPDOWN ================= */}
+                {showAccount && (
+                  <div
+                    className="
+                      absolute
+                      right-0
+                      mt-2
+                      w-64
+                      bg-white
+                      rounded-lg
+                      shadow-lg
+                      border
+                      border-gray-200
+                      p-4
+                      z-50
+                    "
+                  >
+                    <div className="flex flex-col gap-3">
+                      {/* ĐĂNG NHẬP */}
+                      <Link
+                        to="/login"
+                        onClick={() => setShowAccount(false)}
+                        className="
+                          w-full
+                          bg-[#c92127]
+                          text-white
+                          py-2.5
+                          rounded-lg
+                          font-bold
+                          text-center
+                          hover:bg-[#a30014]
+                          transition-colors
+                        "
+                      >
+                        Đăng nhập
+                      </Link>
+
+                      {/* ĐĂNG KÝ */}
+                      <Link
+                        to="/login"
+                        onClick={() => setShowAccount(false)}
+                        className="
+                          w-full
+                          border-2
+                          border-[#c92127]
+                          text-[#c92127]
+                          py-2
+                          rounded-lg
+                          font-bold
+                          text-center
+                          hover:bg-[#c92127]
+                          hover:text-white
+                          transition-colors
+                        "
+                      >
+                        Đăng ký
+                      </Link>
+                    </div>
+                  </div>
+                )}
+              </div>
             </div>
           </div>
 

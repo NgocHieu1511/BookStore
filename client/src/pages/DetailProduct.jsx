@@ -13,6 +13,8 @@ import {
   Plus,
   Zap,
 } from "lucide-react";
+import { useStore } from "../hooks/useStore";
+// import { requestAddToCart } from "../config/cartRequest";
 
 function DetailProduct() {
   const { id } = useParams();
@@ -21,7 +23,7 @@ function DetailProduct() {
   const [loading, setLoading] = useState(true);
   const [quantity, setQuantity] = useState(1);
   const [selectedImage, setSelectedImage] = useState(0);
-  const isLogin = false;
+  const { dataUser } = useStore();
 
   // ==============================
   // LẤY CHI TIẾT SẢN PHẨM
@@ -116,6 +118,20 @@ function DetailProduct() {
   const onLogin = () => {
     navigate("/login");
   };
+  // const handleAddToCart = async () => {
+  //       try {
+  //           const data = {
+  //               productId: id,
+  //               quantity,
+  //           };
+  //           const res = await requestAddToCart(data);
+  //           await fetchProductDetail();
+  //           await getCart();
+  //           message.success(res.message);
+  //       } catch (error) {
+  //           message.error(error.response.data.message);
+  //       }
+  //   };
 
   return (
     <div className="bg-[#f2f4f5] min-h-screen">
@@ -192,7 +208,7 @@ function DetailProduct() {
             )}
 
             {/* BUTTONS */}
-            {isLogin === false ? (
+            {!dataUser && !dataUser?._id ? (
               <div className="w-full px-2">
                 <button
                   onClick={onLogin}
