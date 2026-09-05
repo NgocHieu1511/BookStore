@@ -19,6 +19,14 @@ export const requestLogout = async () => {
     const res = await apiClient.get(`${apiUser}/logout`);
     return res.data;
 };
+export const requestForgotPassword = async (data) => {
+    const res = await apiClient.post(`${apiUser}/forgot-password`, data);
+    return res.data;
+}
+export const requestVerifyForgotPassword = async (data) => {
+    const res = await apiClient.post(`${apiUser}/verify-forgot-password`, data);
+    return res.data;
+}
 export const requestRefreshToken = async () => {
     const res = await request.get(`${apiUser}/refresh-token`);
     return res.data;

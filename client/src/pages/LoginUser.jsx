@@ -323,6 +323,7 @@ function LoginUser() {
                         transition-colors
                         hover:text-[#a30014]
                       "
+                      onClick={() => navigate("/forgot-password")}
                     >
                       Quên mật khẩu?
                     </button>

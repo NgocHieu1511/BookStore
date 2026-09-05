@@ -1,5 +1,6 @@
 import App from "../App";
 import DetailProduct from "../pages/DetailProduct";
+import ForgotPassword from "../pages/ForgotPassword";
 import LoginUser from "../pages/LoginUser";
 
 const routes = [
@@ -15,6 +16,10 @@ const routes = [
     path: "/login",
     element: <LoginUser />,
   },
+  {
+    path: "/forgot-password",
+    element: <ForgotPassword />,
+  }
 ];
 
 export default routes;
