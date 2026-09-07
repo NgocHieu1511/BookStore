@@ -14,40 +14,43 @@ import {
   Zap,
 } from "lucide-react";
 import { useStore } from "../hooks/useStore";
-// import { requestAddToCart } from "../config/cartRequest";
+import { requestAddToCart } from "../config/cartRequest";
+import { message } from "antd";
 
 function DetailProduct() {
   const { id } = useParams();
   const navigate = useNavigate();
   const [product, setProduct] = useState(null);
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState(false);
   const [quantity, setQuantity] = useState(1);
   const [selectedImage, setSelectedImage] = useState(0);
-  const { dataUser } = useStore();
+  const { dataUser , getCart  } = useStore();
 
   // ==============================
   // LẤY CHI TIẾT SẢN PHẨM
   // ==============================
-  useEffect(() => {
-    const fetchProductDetail = async () => {
-      try {
-        setLoading(true);
+  const fetchProductDetail = async () => {
+    try {
+      // setLoading(true);
 
-        const res = await productDetail(id);
+      const res = await productDetail(id);
 
-        console.log("Product detail:", res);
+      console.log("Product detail:", res);
 
-        setProduct(res?.metadata?.product || res?.metadata || res?.data || res);
-      } catch (error) {
-        console.error("Lỗi lấy chi tiết sản phẩm:", error);
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    if (id) {
-      fetchProductDetail();
+      setProduct(res?.metadata?.product || res?.metadata || res?.data || res);
+    } catch (error) {
+      console.error("Lỗi lấy chi tiết sản phẩm:", error);
+    } finally {
+      setLoading(false);
     }
+  };
+
+  useEffect(() => {
+    if (!id) return undefined;
+
+    Promise.resolve().then(() => fetchProductDetail());
+
+    return undefined;
   }, [id]);
 
   // ==============================
@@ -118,20 +121,23 @@ function DetailProduct() {
   const onLogin = () => {
     navigate("/login");
   };
-  // const handleAddToCart = async () => {
-  //       try {
-  //           const data = {
-  //               productId: id,
-  //               quantity,
-  //           };
-  //           const res = await requestAddToCart(data);
-  //           await fetchProductDetail();
-  //           await getCart();
-  //           message.success(res.message);
-  //       } catch (error) {
-  //           message.error(error.response.data.message);
-  //       }
-  //   };
+const handleAddToCart = async () => {
+  try {
+    const data = {
+      productId: id,
+      quantity,
+    };
+    const res = await requestAddToCart(data);
+    
+    // Gọi lại API lấy chi tiết sản phẩm để cập nhật stock mới
+    await fetchProductDetail(); 
+    await getCart(); // Cập nhật giỏ hàng sau khi thêm sản phẩm
+    
+    message.success(res.message);
+  } catch (error) {
+    message.error(error?.response?.data?.message || "Thêm thất bại");
+  }
+};
 
   return (
     <div className="bg-[#f2f4f5] min-h-screen">
@@ -256,6 +262,7 @@ function DetailProduct() {
                   disabled:cursor-not-allowed
                   disabled:opacity-50
                 "
+                  onClick={handleAddToCart}
                 >
                   <ShoppingCart size={20} />
                   Thêm vào giỏ

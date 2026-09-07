@@ -16,9 +16,10 @@ import { requestLogout } from "../config/userRequest";
 function Header() {
   const [active, setActive] = useState("Sách Trong Nước");
   const [showAccount, setShowAccount] = useState(false);
-  const { dataUser } = useStore();
+  const { dataUser, cart} = useStore();
   const navigate = useNavigate();
   console.log("dataUser:", dataUser);
+ 
 
   const menus = [
     "Sách Trong Nước",
@@ -164,6 +165,7 @@ function Header() {
 
               {/* ================= CART ================= */}
               <button
+                onClick={() => navigate("/cart")}
                 className="
                   relative
                   flex
@@ -180,6 +182,28 @@ function Header() {
                   strokeWidth={1.8}
                   className="group-hover:scale-110 transition-transform"
                 />
+                {/* Badge số lượng */}
+  <span
+    className="
+      absolute 
+      -top-1 
+      -right-1 
+      bg-[#c92127] 
+      text-white 
+      text-[10px] 
+      font-bold 
+      h-4 
+      min-w-4 
+      px-1 
+      rounded-full 
+      flex 
+      items-center 
+      justify-center 
+      leading-none
+    "
+  >
+    {cart?.cart?.products?.length || 0} {/* Thay 3 bằng biến số lượng giỏ hàng của bạn (ví dụ: {cartCount}) */}
+  </span>
 
                
 

@@ -1,27 +1,32 @@
-import { useEffect, useState } from "react";
-import Context from "./Context";
-import { requestAuth } from "../config/userRequest";
-import cookie from "js-cookie";
+import { useEffect, useState } from 'react';
+import Context from './Context';
+import { requestAuth } from '../config/userRequest';
+
+import cookie from 'js-cookie';
+import { requestGetCart } from '../config/cartRequest';
 
 export function Provider({ children }) {
-  const [dataUser, setDataUser] = useState(null);
-  const logged = cookie.get('logged');
+    const [dataUser, setDataUser] = useState(null);
+    const [cart, setCart] = useState({});
 
-  useEffect(() => {
-    // Khai báo hàm trực tiếp trong useEffect
+    const logged = cookie.get('logged');
+
     const fetchAuth = async () => {
-      try {
         const res = await requestAuth();
         setDataUser(res.metadata);
-      } catch (error) {
-        console.error("Lỗi xác thực:", error);
-      }
     };
 
-    if (logged) {
-      fetchAuth();
-    }
-  }, [logged]); // Mảng dependency chỉ cần 'logged'
+    const getCart = async () => {
+        const res = await requestGetCart();
+        setCart(res.metadata);
+    };
 
-  return <Context.Provider value={{ dataUser }}>{children}</Context.Provider>;
+    useEffect(() => {
+        if (logged) {
+            fetchAuth();
+            getCart();
+        }
+    }, [logged]);
+
+    return <Context.Provider value={{ dataUser, cart, getCart }}>{children}</Context.Provider>;
 }
