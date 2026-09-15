@@ -10,7 +10,7 @@ router.post("/create", authUser, AsyncHandler(paymentController.createPayment));
 router.get("/vnpay-callback", AsyncHandler(paymentController.vnpayCallback));
 router.get("/momo-callback", AsyncHandler(paymentController.momoCallback));
 
-// router.get('/order/:orderId', authUser, asyncHandler(paymentController.getPaymentById));
+router.get('/order/:orderId', authUser, AsyncHandler(paymentController.getPaymentById));
 
 router.get(
   "/admin/list",

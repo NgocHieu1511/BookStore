@@ -3,6 +3,8 @@ import DetailProduct from "../pages/DetailProduct";
 import ForgotPassword from "../pages/ForgotPassword";
 import LoginUser from "../pages/LoginUser";
 import CartUser from "../pages/CartUser";
+import Checkout from "../pages/CheckOut";
+import PaymentSuccess from "../pages/PaymentSuccess";
 
 const routes = [
   {
@@ -24,6 +26,14 @@ const routes = [
     {
     path: "/cart",
     element: <CartUser />,
+  },
+   {
+    path: "/checkout",
+    element: <Checkout />,
+  },
+   {  
+    path: "/payment-success/:orderId",
+    element: <PaymentSuccess />,
   }
 
 ];

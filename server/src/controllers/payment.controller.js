@@ -267,10 +267,7 @@ class PaymentController {
     await couponModel.findByIdAndUpdate(findCartUser.couponId, {
       $inc: { quantity: -1 },
     });
-    return new Created({
-      message: "Thanh toán thành công",
-      metadata: newPayment,
-    }).send(res);
+     return res.redirect(`${process.env.CLIENT_URL}/payment-success/${newPayment._id}`);
   }
   //CHỨC NĂNG LẤY DANH SÁCH ĐƠN HÀNG CỦA ADMIN
   async getPaymentsAdmin(req, res) {

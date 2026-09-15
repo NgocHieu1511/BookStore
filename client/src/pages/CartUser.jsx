@@ -34,6 +34,15 @@ const CartUser = () => {
   const cartData = cart?.cart;
   const products = cartData?.products || [];
   const coupons = cart?.coupons || [];
+  console.log("cartData:", cartData);
+  console.log("products:", products);
+  console.log("coupons:", coupons);
+  console.log("========== CART ==========");
+console.log("cart:", cart);
+console.log("cartData:", cartData);
+console.log("products:", products);
+console.log("coupons:", coupons);
+console.log("totalPrice:", cartData?.totalPrice);
 
   const [selectedCoupon, setSelectedCoupon] = useState(null);
   const [deleteModal, setDeleteModal] = useState({
