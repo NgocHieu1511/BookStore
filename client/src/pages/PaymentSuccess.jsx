@@ -23,38 +23,31 @@ function PaymentSuccess() {
   // Lưu thông tin đơn hàng
   const [dataPayment, setDataPayment] = useState(null);
 
-  // Trạng thái loading
-  const [loading, setLoading] = useState(true);
+const [loading, setLoading] = useState(false); // Khởi tạo mặc định là false
 
-  // ============================
-  // LẤY THÔNG TIN ĐƠN HÀNG
-  // ============================
-  useEffect(() => {
-    const fetchDataPayment = async () => {
-      try {
-        // Gọi API lấy đơn hàng theo orderId
-        const res = await requestPaymentById(orderId);
+useEffect(() => {
+  // Nếu không có orderId, dừng luôn, không gọi setLoading đồng bộ nữa
+  if (!orderId) return;
 
-        // Backend trả về dữ liệu trong metadata
-        setDataPayment(res.metadata);
+  const fetchDataPayment = async () => {
+    setLoading(true); // Gọi trong async function -> an toàn, không bị warning
+    try {
+      // Gọi API lấy đơn hàng theo orderId
+      const res = await requestPaymentById(orderId);
 
-        setLoading(false);
-      } catch (error) {
-        console.error("Lỗi lấy thông tin thanh toán:", error);
-
-        message.error("Không thể tải thông tin đơn hàng");
-
-        setLoading(false);
-      }
-    };
-
-    // Chỉ gọi API khi có orderId
-    if (orderId) {
-      fetchDataPayment();
-    } else {
+      // Backend trả về dữ liệu trong metadata
+      setDataPayment(res.metadata);
+    } catch (error) {
+      console.error("Lỗi lấy thông tin thanh toán:", error);
+      message.error("Không thể tải thông tin đơn hàng");
+    } finally {
+      // Chạy sau khi API xong (async) -> an toàn
       setLoading(false);
     }
-  }, [orderId]);
+  };
+
+  fetchDataPayment();
+}, [orderId]);
 
   // ============================
   // FORMAT GIÁ TIỀN

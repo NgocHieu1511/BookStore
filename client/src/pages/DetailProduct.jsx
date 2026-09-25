@@ -14,7 +14,7 @@ import {
   Zap,
 } from "lucide-react";
 import { useStore } from "../hooks/useStore";
-import { requestAddToCart } from "../config/cartRequest";
+import { requestAddToCart } from "../config/CartRequest";
 import { message } from "antd";
 
 function DetailProduct() {

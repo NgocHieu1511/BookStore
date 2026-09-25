@@ -21,7 +21,7 @@ function App() {
   // }, []);
 
   return (
-    <div className="h-1000000">
+    <div >
       <header>
         <Header />
       </header>
