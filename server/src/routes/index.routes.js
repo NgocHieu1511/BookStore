@@ -5,6 +5,7 @@ const cartRoutes = require("./cart.routes");
 const couponRoutes = require("./coupon.routes");
 const paymentRoutes = require("./payment.routes");
 const feedbackRoutes = require("./feedback.routes");
+
 function routes(app) {
   app.use("/api/user", usersRoutes);
   app.use("/api/category", categoryRoutes);

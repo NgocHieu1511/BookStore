@@ -1,15 +1,21 @@
 const mongoose = require("mongoose");
 
-const Schema = mongoose.Schema;
-
-const categoryModel = new Schema(
+const categorySchema = new mongoose.Schema(
   {
-    nameCategory: { type: String, require: true },
-    imageCategory: { type: String, require: true },
+    nameCategory: {
+      type: String,
+      required: [true, "Tên danh mục không được để trống"],
+      trim: true,
+    },
+
+    imageCategory: {
+      type: String,
+      required: [true, "Ảnh danh mục không được để trống"],
+    },
   },
   {
     timestamps: true,
-  },
+  }
 );
 
-module.exports = mongoose.model("category", categoryModel);
+module.exports = mongoose.model("category", categorySchema);

@@ -22,5 +22,17 @@ router.put(
   authAdmin,
   AsyncHandler(paymentController.updatePayment),
 );
+// ADMIN: XEM CHI TIẾT ĐƠN HÀNG
+router.get(
+  "/admin/detail/:orderId",
+  authAdmin,
+  AsyncHandler(paymentController.getPaymentDetailAdmin),
+);
+// KHÁCH HÀNG: XEM ĐƠN HÀNG CỦA MÌNH
+router.get(
+  "/my-orders",
+  authUser,
+  AsyncHandler(paymentController.getMyPayments)
+);
 
 module.exports = router;

@@ -1,4 +1,5 @@
 //import model
+const mongoose = require("mongoose");
 const paymentModel = require("../models/payment.model");
 const cartModel = require("../models/cart.model");
 const couponModel = require("../models/coupon.model");
@@ -46,7 +47,7 @@ class PaymentController {
         phoneNumber: findCartUser.phoneNumber,
         address: findCartUser.address,
         email: findCartUser.email,
-        finalPrice: findCartUser.finalPrice,
+       finalPrice: findCartUser.finalPrice || findCartUser.totalPrice,
         couponId: findCartUser.couponId,
         status: "pending",
         paymentMethod: "cod",
@@ -70,8 +71,8 @@ class PaymentController {
     // THANH TOÁN VNPAY
     else if (typePayment === "vnpay") {
       const vnpay = new VNPay({
-        tmnCode: "J0SY0QKY",
-        secureSecret: "TMAORHXOUDZRJGMDFQGGPRTDSMPDSXZC",
+        tmnCode: "HJH61TZ7",
+        secureSecret: "QZELHPTXXXVECOTIPGARIOCTNTFBPITC",
         vnpayHost: "https://sandbox.vnpayment.vn",
         testMode: true, // tùy chọn
         hashAlgorithm: "SHA512", // tùy chọn
@@ -206,6 +207,9 @@ class PaymentController {
     if (!findCartUser) {
       throw new NotFoundError("Giỏ hàng không tồn tại");
     }
+    const finalPrice = findCartUser.couponId
+  ? findCartUser.finalPrice
+  : findCartUser.totalPrice;
     const newPayment = await paymentModel.create({
       userId,
       products: findCartUser.products,
@@ -214,7 +218,7 @@ class PaymentController {
       phoneNumber: findCartUser.phoneNumber,
       address: findCartUser.address,
       email: findCartUser.email,
-      finalPrice: findCartUser.finalPrice,
+      finalPrice: findCartUser.finalPrice || findCartUser.totalPrice,
       couponId: findCartUser.couponId,
       paymentMethod: "vnpay",
       status: "pending",
@@ -229,10 +233,7 @@ class PaymentController {
       $inc: { quantity: -1 },
     });
 
-    return new Created({
-      message: "Thanh toán thành công",
-      metadata: newPayment,
-    }).send(res);
+        return res.redirect(`${process.env.CLIENT_URL}/payment-success/${newPayment._id}`);
   }
   async momoCallback(req, res) {
     const { resultCode, orderInfo } = req.query;
@@ -245,6 +246,12 @@ class PaymentController {
     if (!findCartUser) {
       throw new NotFoundError("Giỏ hàng không tồn tại");
     }
+    const finalPrice = findCartUser.couponId
+  ? findCartUser.finalPrice
+  : findCartUser.totalPrice;
+
+
+
     const newPayment = await paymentModel.create({
       userId,
       products: findCartUser.products,
@@ -253,7 +260,7 @@ class PaymentController {
       phoneNumber: findCartUser.phoneNumber,
       address: findCartUser.address,
       email: findCartUser.email,
-      finalPrice: findCartUser.finalPrice,
+      finalPrice: findCartUser.finalPrice || findCartUser.totalPrice,
       couponId: findCartUser.couponId,
       paymentMethod: "momo",
       status: "pending",
@@ -270,54 +277,218 @@ class PaymentController {
      return res.redirect(`${process.env.CLIENT_URL}/payment-success/${newPayment._id}`);
   }
   //CHỨC NĂNG LẤY DANH SÁCH ĐƠN HÀNG CỦA ADMIN
-  async getPaymentsAdmin(req, res) {
-    const dataPayment = await paymentModel
-      .find({})
-      .populate("userId", "fullName email")
-      .populate("products.productId", "")
-      .populate("couponId");
-    return new OK({
-      message: "Lấy danh sách đơn hàng thành công",
-      metadata: dataPayment,
-    }).send(res);
-  }
+  // async getPaymentsAdmin(req, res) {
+  //   const dataPayment = await paymentModel
+  //     .find({})
+  //     .populate("userId", "fullName email")
+  //     .populate("products.productId", "")
+  //     .populate("couponId");
+  //   return new OK({
+  //     message: "Lấy danh sách đơn hàng thành công",
+  //     metadata: dataPayment,
+  //   }).send(res);
+  // }
   //cập nhật trạng thái đơn hàng
-  async updatePayment(req, res) {
-    // lấy ra orderId và status do nguoi dùng gửi lên
-    const { orderId } = req.params;
-    const { status } = req.body;
-    //kiểm tra nếu không có thì trả về lỗi
-    if (!orderId || !status) {
-      throw new BadRequestError("Bạn đang thiếu thông tin");
-    }
+  // ADMIN: CẬP NHẬT TRẠNG THÁI ĐƠN HÀNG
+async updatePayment(req, res) {
+  const { orderId } = req.params;
+ const { status, note } = req.body;
 
-    const findPayment = await paymentModel.findById(orderId);
-    if (!findPayment) {
-      throw new NotFoundError("Đơn hàng không tồn tại");
-    }
+  const allowedStatuses = [
+    "pending",
+    "confirmed",
+    
+    "delivered",
+    "completed",
+    "cancelled",
+  ];
 
-    findPayment.status = status;
-    await findPayment.save();
-    return new OK({
-      message: "Cập nhật đơn hàng thành công",
-      metadata: findPayment,
-    }).send(res);
+  if (!orderId || !status) {
+    throw new BadRequestError(
+      "Vui lòng cung cấp mã đơn hàng và trạng thái"
+    );
   }
-  async getPaymentById(req, res) {
-    const { orderId } = req.params;
-    const findPayment = await paymentModel
-      .findById(orderId)
-      .populate("userId", "fullName email")
-      .populate("products.productId", "")
-      .populate("couponId");
-    if (!findPayment) {
-      throw new NotFoundError("Đơn hàng không tồn tại");
+
+  if (!allowedStatuses.includes(status)) {
+    throw new BadRequestError(
+      "Trạng thái đơn hàng không hợp lệ"
+    );
+  }
+
+  const findPayment = await paymentModel.findById(orderId);
+
+  if (!findPayment) {
+    throw new NotFoundError("Đơn hàng không tồn tại");
+  }
+
+  // Không cho chuyển đơn đã hoàn thành hoặc đã hủy
+  // sang trạng thái khác thông qua API thông thường.
+ if (findPayment.status !== status) {
+  findPayment.status = status;
+  findPayment.statusHistory.push({
+    status,
+    changedAt: new Date(),
+    note: note || "",
+  });
+}
+  await findPayment.save();
+
+  return new OK({
+    message: "Cập nhật trạng thái đơn hàng thành công",
+    metadata: findPayment,
+  }).send(res);
+}
+  // ADMIN: LẤY DANH SÁCH ĐƠN HÀNG
+async getPaymentsAdmin(req, res) {
+  const {
+    status,
+    keyword,
+    page = 1,
+    limit = 10,
+  } = req.query;
+
+  const currentPage = Math.max(1, Number(page) || 1);
+  const pageSize = Math.min(100, Math.max(1, Number(limit) || 10));
+
+  // Xây dựng điều kiện tìm kiếm
+  const filter = {};
+
+  if (
+    status &&
+    [
+      "pending",
+      "confirmed",
+      
+      "delivered",
+      "completed",
+      "cancelled",
+    ].includes(status)
+  ) {
+    filter.status = status;
+  }
+
+  // Lấy danh sách đơn hàng và tổng số đơn
+  let query = paymentModel.find(filter);
+
+  query = query
+    .populate("userId", "fullName email")
+    .populate(
+      "products.productId",
+      "nameProduct priceProduct imagesProduct"
+    )
+    .populate("couponId")
+    .sort({ createdAt: -1 });
+
+  const allOrders = await query.lean();
+
+  // Tìm kiếm theo mã đơn, tên khách hàng,
+  // email, số điện thoại
+  const searchText = String(keyword || "")
+    .trim()
+    .toLowerCase();
+
+  const filteredOrders = searchText
+    ? allOrders.filter((order) => {
+        const values = [
+          order._id,
+          order.fullName,
+          order.email,
+          order.phoneNumber,
+        ];
+
+        return values.some((value) =>
+          String(value || "")
+            .toLowerCase()
+            .includes(searchText)
+        );
+      })
+    : allOrders;
+
+  const totalOrders = filteredOrders.length;
+
+  const orders = filteredOrders.slice(
+    (currentPage - 1) * pageSize,
+    currentPage * pageSize
+  );
+
+  return new OK({
+    message: "Lấy danh sách đơn hàng thành công",
+    metadata: {
+      orders,
+      pagination: {
+        currentPage,
+        pageSize,
+        totalOrders,
+        totalPages: Math.ceil(totalOrders / pageSize),
+      },
+    },
+  }).send(res);
+}
+// ADMIN: LẤY CHI TIẾT MỘT ĐƠN HÀNG
+async getPaymentDetailAdmin(req, res) {
+  const { orderId } = req.params;
+
+  // 1. Kiểm tra mã đơn hàng hợp lệ
+  if (!mongoose.Types.ObjectId.isValid(orderId)) {
+    throw new BadRequestError("Mã đơn hàng không hợp lệ");
+  }
+
+  // 2. Tìm đơn hàng và lấy thông tin liên quan
+  const order = await paymentModel
+    .findById(orderId)
+    .populate("userId", "fullName email")
+    .populate(
+      "products.productId",
+      "nameProduct priceProduct discountProduct imagesProduct"
+    )
+    .populate("couponId", "nameCoupon discount minPrice")
+    .lean();
+
+  // 3. Nếu không tìm thấy đơn hàng
+  if (!order) {
+    throw new NotFoundError("Không tìm thấy đơn hàng");
+  }
+
+  // 4. Trả dữ liệu cho frontend
+  return new OK({
+    message: "Lấy chi tiết đơn hàng thành công",
+    metadata: order,
+  }).send(res);
+}
+// KHÁCH HÀNG: LẤY DANH SÁCH ĐƠN HÀNG CỦA MÌNH
+async getMyPayments(req, res) {
+  const userId = req.user;
+
+  const orders = await paymentModel
+    .find({ userId })
+    .populate(
+      "products.productId",
+      "nameProduct priceProduct discountProduct imagesProduct"
+    )
+    .populate("couponId", "nameCoupon discount minPrice")
+    .sort({ createdAt: -1 })
+    .lean();
+
+  return new OK({
+    message: "Lấy danh sách đơn hàng thành công",
+    metadata: orders,
+  }).send(res);
+}
+ async getPaymentById(req, res) {
+        const { orderId } = req.params;
+        const findPayment = await paymentModel
+            .findById(orderId)
+            .populate('userId', 'fullName email')
+            .populate('products.productId', '')
+            .populate('couponId');
+        if (!findPayment) {
+            throw new NotFoundError('Đơn hàng không tồn tại');
+        }
+        return new OK({
+            message: 'Lấy đơn hàng thành công',
+            metadata: findPayment,
+        }).send(res);
     }
-    return new OK({
-      message: "Lấy đơn hàng thành công",
-      metadata: findPayment,
-    }).send(res);
-  }
 }
 
 module.exports = new PaymentController();

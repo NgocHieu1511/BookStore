@@ -102,7 +102,7 @@ useEffect(() => {
         color: "bg-blue-100 text-blue-800",
       },
 
-      shipping: {
+      delivered: {
         text: "Đang giao hàng",
         color: "bg-purple-100 text-purple-800",
       },
