@@ -15,7 +15,7 @@ import {
   AlertCircle,
 } from "lucide-react";
 
-import { requestAdminPaymentDetail } from "../../config/paymentRequest";
+import { requestAdminPaymentDetail } from "../../../../config/paymentRequest";
 
 const STATUS_MAP = {
   pending: { label: "Chờ xác nhận", color: "gold" },

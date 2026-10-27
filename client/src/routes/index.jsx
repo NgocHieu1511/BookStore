@@ -5,11 +5,12 @@ import LoginUser from "../pages/LoginUser";
 import CartUser from "../pages/CartUser";
 import Checkout from "../pages/CheckOut";
 import PaymentSuccess from "../pages/PaymentSuccess";
-import OrderManagement from "../pages/admin/OrderManagement";
-import OrderDetailAdmin from "../pages/admin/OrderDetailAdmin";
+import OrderManagement from "../pages/admin/Components/Order/OrderManagement";
+import OrderDetailAdmin from "../pages/admin/Components/Order/OrderDetailAdmin";
 import MyOrders from "../pages/MyOrders";
 import OrderDetail from "../pages/OrderDetail";
 import Dashboard from "../pages/admin/DashBoard";
+import MyAccountLayout from "../pages/MyAccountLayout";
 
 const routes = [
   {
@@ -48,10 +49,10 @@ const routes = [
   path: "/admin/orders/:orderId",
   element: <OrderDetailAdmin />,
 },
-{
-  path: "/my-orders",
-  element: <MyOrders />,
-},
+// {
+//   path: "/account/my-orders",
+//   element: <MyOrders />,
+// },
  // KHÁCH HÀNG: CHI TIẾT ĐƠN HÀNG
   {
     path: "/order/:orderId",
@@ -60,7 +61,20 @@ const routes = [
   {
     path: "/admin",
     element: <Dashboard />,
-  }
+  },
+
+{
+    path: "/account",
+    element: <MyAccountLayout />,
+    children: [
+        {
+            path: "my-orders",
+            element: <MyOrders />,
+        },
+      
+    ],
+},
+
 
 ];
 

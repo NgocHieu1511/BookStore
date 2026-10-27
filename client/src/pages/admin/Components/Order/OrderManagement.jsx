@@ -18,7 +18,7 @@ import {
 import {
   requestAdminPaymentList,
   requestUpdatePaymentStatus,
-} from "../../config/paymentRequest";
+} from "../../../../config/paymentRequest";
 
 const STATUS_OPTIONS = [
   { value: "pending", label: "Chờ xác nhận" },

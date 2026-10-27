@@ -6,19 +6,21 @@ import {
   Menu,
   ChevronDown,
 } from "lucide-react";
-import { useState } from "react";
+import { useState,useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { Avatar, Dropdown, message } from 'antd';
 import {  UserOutlined, DownOutlined} from '@ant-design/icons';
 import { useStore } from "../hooks/useStore";
 import { requestLogout } from "../config/userRequest";
+import { listCategory } from "../config/categoryRequest";
 
 function Header() {
   const [active, setActive] = useState("Sách Trong Nước");
   const [showAccount, setShowAccount] = useState(false);
   const { dataUser, cart} = useStore();
+   const [categories, setCategories] = useState([]);
   const navigate = useNavigate();
-  console.log("dataUser:", dataUser);
+
  
 
   const menus = [
@@ -28,6 +30,7 @@ function Header() {
     "Đồ Chơi",
     "Làm Đẹp - Sức Khỏe",
   ];
+  
   const HandleLogout = async() => {
       try {
         await requestLogout();
@@ -40,12 +43,35 @@ function Header() {
       }
     }
       const userMenuItems = [
-        { key: 'profile', label: 'Thông tin cá nhân', href: '/info-user' },
-        { key: 'bookings', label: 'Đơn hàng của tôi', href: '/bookings' },
-        { key: 'warranty', label: 'Quản lý bảo hành', href: '/warranty' },
-        { key: 'logout', label: 'Đăng xuất', onClick: HandleLogout},
+    {
+        key: 'profile',
+        label: 'Thông tin cá nhân',
+        onClick: () => navigate('/account'),
+    },
+    {
+        key: 'bookings',
+        label: 'Đơn hàng của tôi',
+        onClick: () => navigate('/account/my-orders'),
+    },
+    {
+        key: 'logout',
+        label: 'Đăng xuất',
+        onClick: HandleLogout,
+    },
+];
+  useEffect(() => {
+    const fetchCategory = async () => {
+      try {
+        const res = await listCategory();
+        setCategories(res.metadata || []);
+      } catch (error) {
+        console.error("Error fetching categories:", error);
+      }
+    };
 
-    ];
+    fetchCategory();
+  
+  }, []);
     
 
 
@@ -372,9 +398,10 @@ function Header() {
         </div>
 
         {/* ================= NAVIGATION ================= */}
-        <nav className="hidden md:flex items-center gap-7 py-3 overflow-x-auto">
+        <nav className="hidden md:flex items-center gap-7 py-3">
           {/* Category */}
-          <button
+            <div className="relative group shrink-0">
+                <button
             className="
               flex
               items-center
@@ -393,6 +420,52 @@ function Header() {
 
             <ChevronDown size={16} />
           </button>
+          {/* Dropdown */}
+      <div
+        className="
+          absolute
+          top-full
+          left-0
+          z-50
+          w-64
+          bg-white
+          border
+          border-gray-200
+          rounded-md
+          shadow-lg
+          opacity-0
+          invisible
+          group-hover:opacity-100
+          group-hover:visible
+          transition-all
+          duration-200
+        "
+      >
+        <ul className="py-2">
+         {categories.map((category) => (
+                <li
+                  key={category._id}
+                  
+                >
+                 
+
+                  <span className="text-center text-sm font-semibold text-[#191c1d] group-hover:text-[#a30014]">
+                    {category.nameCategory}
+                  </span>
+                </li>
+              ))}
+
+         
+
+          
+
+         
+
+          
+        </ul>
+          </div>
+            </div>
+        
 
           {/* Menu */}
           {menus.map((menu) => (

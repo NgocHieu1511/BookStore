@@ -2,14 +2,14 @@
 import { useEffect } from 'react';
 
 import Message from './Components/Messages/Message';
-import Order from './Components/Order/Order';
+import Order from './Components/Order/OrderManagement';
 import HomeProducts from './Components/Product/HomeProducts';
 import HomeDiscount from './Components/Discounts/HomeDiscount';
 import Category from './Components/Category/Category';
 import DiscountProduct from './Components/DiscountProduct/DiscountProduct';
 import ControllerUser from './Components/Users/User';
 import Blog from './Components/Blog/Blog';
-import Dashboard from './DashBoard';
+import DashboardOverview from './DashboardOverview';
 
 function HomePage({ type }) {
     useEffect(() => {
@@ -33,7 +33,7 @@ function HomePage({ type }) {
             ) : type === 4 ? (
                 <ControllerUser />
             ) : type === 0 ? (
-                <Dashboard />
+                <DashboardOverview />
             ) : type === 5 ? (
                 <Blog />
             ) : null}

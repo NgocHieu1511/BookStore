@@ -21,7 +21,7 @@ const STATUS_MAP = {
     className: "bg-blue-100 text-blue-700",
   },
   delivered: {
-    label: "Đang giao hàng",
+    label: "Đã giao hàng",
     className: "bg-purple-100 text-purple-700",
   },
   completed: {

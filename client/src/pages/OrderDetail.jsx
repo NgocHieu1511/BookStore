@@ -195,7 +195,7 @@ function OrderDetail() {
           </button>
 
           <Link
-            to="/my-orders"
+            to="/account/my-orders"
             className="rounded-lg border border-gray-300 px-4 py-2 text-gray-700 transition hover:bg-gray-100"
           >
             Về đơn hàng của tôi
@@ -237,7 +237,7 @@ function OrderDetail() {
         <div className="mb-6">
           <button
             type="button"
-            onClick={() => navigate("/my-orders")}
+            onClick={() => navigate("/account/my-orders")}
             className="mb-4 inline-flex items-center gap-2 text-sm text-gray-600 transition hover:text-red-600"
           >
             <ArrowLeft size={18} />
@@ -585,7 +585,7 @@ function OrderDetail() {
 
             <button
               type="button"
-              onClick={() => navigate("/my-orders")}
+              onClick={() => navigate("/account/my-orders")}
               className="flex w-full items-center justify-center gap-2 rounded-lg border border-gray-300 bg-white px-4 py-3 font-semibold text-gray-700 transition hover:border-red-600 hover:text-red-600"
             >
               <CalendarDays size={18} />

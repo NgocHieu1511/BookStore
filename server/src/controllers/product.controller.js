@@ -61,7 +61,7 @@ class ProductController {
   }
 
   async getAllProduct(req, res) {
-    const products = await productModel.find();
+    const products = await productModel.find().populate('categoryProduct', 'nameCategory');
     return new OK({
       message: "Lấy danh sách sản phẩm thành công",
       metadata: products,
