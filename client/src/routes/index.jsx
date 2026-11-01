@@ -11,6 +11,7 @@ import MyOrders from "../pages/MyOrders";
 import OrderDetail from "../pages/OrderDetail";
 import Dashboard from "../pages/admin/DashBoard";
 import MyAccountLayout from "../pages/MyAccountLayout";
+import ProductCategory from "../pages/ProductCategory";
 
 const routes = [
   {
@@ -74,6 +75,10 @@ const routes = [
       
     ],
 },
+{
+  path: "/category/:id",
+  element: <ProductCategory />,
+}
 
 
 ];

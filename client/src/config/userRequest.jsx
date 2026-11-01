@@ -31,3 +31,19 @@ export const requestRefreshToken = async () => {
     const res = await request.get(`${apiUser}/refresh-token`);
     return res.data;
 };
+export const requestLoginGoogle = async (tokenGoogle) => {
+    const res = await request.post(`${apiUser}/login-google`, {
+        tokenGoogle: tokenGoogle,
+    });
+    return res.data;
+};
+
+export const requestGetAllUser = async (params) => {
+    const res = await apiClient.get(`${apiUser}/list`, { params });
+    return res.data;
+};
+
+export const requestLockUser = async (id, isBlocked) => {
+    const res = await apiClient.patch(`${apiUser}/lock/${id}`, { isBlocked });
+    return res.data;
+};

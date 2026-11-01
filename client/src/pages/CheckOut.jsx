@@ -667,13 +667,7 @@ const Checkout = () => {
                 </div>
               </div>
 
-              {/* F-POINT */}
-              <div className="bg-amber-50 border border-amber-200 rounded p-2.5 text-xs text-amber-900 flex items-center justify-between">
-                <span className="flex items-center gap-1.5">
-                  🪙 F-Point tích lũy:
-                </span>
-                <span className="font-bold text-amber-700">+280 điểm</span>
-              </div>
+            
 
               {/* SUBMIT BUTTON */}
               <button

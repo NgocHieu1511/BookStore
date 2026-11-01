@@ -13,22 +13,25 @@ import {  UserOutlined, DownOutlined} from '@ant-design/icons';
 import { useStore } from "../hooks/useStore";
 import { requestLogout } from "../config/userRequest";
 import { listCategory } from "../config/categoryRequest";
+import {  useParams } from "react-router-dom";
 
 function Header() {
   const [active, setActive] = useState("Sách Trong Nước");
   const [showAccount, setShowAccount] = useState(false);
   const { dataUser, cart} = useStore();
    const [categories, setCategories] = useState([]);
+   
+   const { id: activeCategory } = useParams();
   const navigate = useNavigate();
 
  
 
   const menus = [
-    "Sách Trong Nước",
-    "FOREIGN BOOKS",
-    "VPP - Dụng Cụ Học Sinh",
-    "Đồ Chơi",
-    "Làm Đẹp - Sức Khỏe",
+    "Bài viết",
+    "Liên hệ",
+    "Yêu thích",
+    "Giới thiệu",
+    
   ];
   
   const HandleLogout = async() => {
@@ -399,72 +402,75 @@ function Header() {
 
         {/* ================= NAVIGATION ================= */}
         <nav className="hidden md:flex items-center gap-7 py-3">
-          {/* Category */}
-            <div className="relative group shrink-0">
-                <button
-            className="
-              flex
-              items-center
-              gap-2
-              shrink-0
-              font-bold
-              text-[13px]
-              text-gray-900
-              hover:text-[#c92127]
-              transition-colors
-            "
-          >
-            <Menu size={21} strokeWidth={2.5} />
+         {/* Category */}
+{/* Category */}
+<div className="relative group shrink-0">
+  <button
+    className="
+      flex items-center gap-2 shrink-0
+      font-bold text-[13px] text-gray-900
+      hover:text-[#c92127] transition-colors
+    "
+  >
+    <Menu size={21} strokeWidth={2.5} />
+   
+    <ChevronDown
+      size={16}
+      className="transition-transform duration-200 group-hover:rotate-180"
+    />
+  </button>
 
-            <span>DANH MỤC SẢN PHẨM</span>
+  {/* Dropdown */}
+  <div
+    className="
+      absolute top-full left-0 z-50 pt-3 w-60
+      opacity-0 invisible translate-y-2
+      group-hover:opacity-100 group-hover:visible group-hover:translate-y-0
+      transition-all duration-200 ease-out
+    "
+  >
+    <div className="bg-white rounded-2xl shadow-[0_8px_30px_rgba(0,0,0,0.15)] overflow-hidden">
+      {/* Tiêu đề */}
+      <h3 className="px-6 pt-6 pb-3 text-[20px] font-bold text-gray-500 leading-tight">
+        Danh mục sản phẩm
+      </h3>
 
-            <ChevronDown size={16} />
-          </button>
-          {/* Dropdown */}
-      <div
-        className="
-          absolute
-          top-full
-          left-0
-          z-50
-          w-64
-          bg-white
-          border
-          border-gray-200
-          rounded-md
-          shadow-lg
-          opacity-0
-          invisible
-          group-hover:opacity-100
-          group-hover:visible
-          transition-all
-          duration-200
-        "
-      >
-        <ul className="py-2">
-         {categories.map((category) => (
-                <li
-                  key={category._id}
+      {/* Danh sách */}
+      <ul className="px-3 pb-3 max-h-[380px] overflow-y-auto space-y-1">
+        {categories.length > 0 ? (
+          categories.map((category) => {
+            const isActive = activeCategory === category._id;
+
+            return (
+              <li key={category._id}>
+                <Link
+                  to={`/category/${category._id}`}
                   
+                  className={`
+                    block px-4 py-4 rounded-xl
+                    text-[15px] font-bold text-gray-900
+                    transition-colors
+                    ${
+                      isActive
+                        ? "bg-[#f3f4f6]"
+                        : "hover:bg-[#f3f4f6]"
+                    }
+                  `}
                 >
-                 
-
-                  <span className="text-center text-sm font-semibold text-[#191c1d] group-hover:text-[#a30014]">
-                    {category.nameCategory}
-                  </span>
-                </li>
-              ))}
-
-         
-
-          
-
-         
-
-          
-        </ul>
-          </div>
-            </div>
+                  {category.nameCategory}
+                </Link>
+              </li>
+            );
+          })
+        ) : (
+          <li className="px-4 py-4 text-sm text-gray-400">
+            Chưa có danh mục
+          </li>
+        )}
+      </ul>
+    </div>
+  </div>
+</div>
         
 
           {/* Menu */}

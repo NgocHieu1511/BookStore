@@ -16,8 +16,12 @@ return res.data;
 
 // Cập nhật sản phẩm
 export const updateProduct = async (idProduct, formData) => {
-const res = await request.put(`${apiProduct}/update/${idProduct}`,formData);
-return res.data;
+    const res = await request.put(`${apiProduct}/update/${idProduct}`, formData, {
+        headers: {
+            'Content-Type': 'multipart/form-data',
+        },
+    });
+    return res.data;
 };
 
 // Xóa sản phẩm

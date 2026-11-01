@@ -150,7 +150,9 @@ class ProductController {
 
   async getProductById(req, res) {
     const { id } = req.params;
-    const product = await productModel.findById(id);
+    const product = await productModel
+        .findById(id)
+        .populate("categoryProduct", "nameCategory");
     // const feedbacks = await feedbackModel.find({ productId: id });
     if (!product) {
       throw new NotFoundError("Sản phẩm không tồn tại");

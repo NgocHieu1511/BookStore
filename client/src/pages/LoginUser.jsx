@@ -1,8 +1,10 @@
 import Header from "../components/Header";
 import Footer from "../components/Footer";
+import { GoogleLogin } from "@react-oauth/google";
+
 import { useState } from "react";
 import { Eye, EyeOff } from "lucide-react";
-import { requestLogin ,requestRegister, } from "../config/userRequest";
+import { requestLoginGoogle,requestLogin ,requestRegister, } from "../config/userRequest";
 import { useNavigate } from "react-router-dom";
 import { message } from "antd";
 
@@ -86,6 +88,21 @@ function LoginUser() {
       setLoading(false);
     }
   };
+  const handleGoogleSuccess = async (credentialResponse) => {
+  try {
+    setLoading(true);
+    await requestLoginGoogle(credentialResponse.credential);
+    message.success("Đăng nhập thành công!");
+    setTimeout(() => {
+      navigate("/");
+      window.location.reload();
+    }, 1000);
+  } catch (error) {
+    message.error(error.response?.data?.message || "Đăng nhập Google thất bại!");
+  } finally {
+    setLoading(false);
+  }
+};
   // handle register submit
   const handleRegister = async (e) => {
   e.preventDefault();
@@ -392,27 +409,14 @@ function LoginUser() {
                     </button>
 
                     {/* GOOGLE */}
-                    <button
-                      type="button"
-                      className="
-                        flex
-                        h-12
-                        w-12
-                        items-center
-                        justify-center
-                        rounded-full
-                        border
-                        border-gray-200
-                        bg-white
-                        text-lg
-                        font-bold
-                        text-[#4285F4]
-                        transition
-                        hover:bg-gray-100
-                      "
-                    >
-                      G
-                    </button>
+                  {/* GOOGLE */}
+<GoogleLogin
+  onSuccess={handleGoogleSuccess}
+  onError={() => message.error("Đăng nhập Google thất bại!")}
+  type="icon"
+  shape="circle"
+  theme="outline"
+/>
 
                     {/* APPLE */}
                     <button

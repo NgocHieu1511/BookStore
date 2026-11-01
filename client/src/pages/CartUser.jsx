@@ -2,8 +2,7 @@ import { useState } from "react";
 import Header from "../components/Header";
 import { useStore } from "../hooks/useStore";
 import {
-  Truck,
-  Gift,
+  
   Ticket,
   Trash2,
   Minus,
@@ -14,7 +13,7 @@ import {
   Check,
   ShieldCheck,
   RotateCcw,
-  Coins,
+  
   CircleHelp,
 } from "lucide-react";
 import {
@@ -28,6 +27,7 @@ import  Footer  from "../components/Footer";
 
 const CartUser = () => {
   const { cart, getCart } = useStore();
+  console.log("Dữ liệu giỏ hàng:", cart);
 
   // cart có thể chưa có dữ liệu khi component render lần đầu
   // nên luôn lấy dữ liệu bằng ?. để tránh lỗi undefined
@@ -95,9 +95,9 @@ const CartUser = () => {
 
   const voucherDiscount = calculateDiscount();
 
-  // Miễn phí ship từ 350.000đ
-  const freeShipProgress = Math.min((subtotal / 350000) * 100, 100);
-  const shippingFee = subtotal >= 350000 ? 0 : 30000;
+  // Miễn phí ship
+
+  const shippingFee = 0
 
   const total = Math.max(0, subtotal - voucherDiscount + shippingFee);
 
@@ -268,7 +268,7 @@ const CartUser = () => {
             </span>
           </div>
 
-          {/* FREE SHIPPING */}
+          {/* FREE SHIPPING
           <div className="bg-white p-4 rounded-lg shadow-sm border border-gray-200 mb-5">
             <div className="flex flex-col md:flex-row md:items-center justify-between gap-2 mb-2">
               <div className="flex items-center gap-2 text-xs md:text-sm font-medium">
@@ -320,7 +320,7 @@ const CartUser = () => {
                 <ArrowRight className="w-3 h-3" />
               </button>
             </div>
-          </div>
+          </div> */}
 
           {/* MAIN GRID */}
           <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
@@ -638,15 +638,7 @@ const CartUser = () => {
                     </div>
                   </div>
 
-                  <div className="mt-3 bg-amber-50 text-amber-900 border border-amber-200 rounded p-2 text-xs flex items-center justify-between">
-                    <span className="flex items-center">
-                      <Coins className="w-4 h-4 text-amber-500 mr-1.5" />
-                      F-Point tích lũy:
-                    </span>
-                    <span className="font-bold text-amber-700">
-                      +{Math.floor(total / 1000)} điểm
-                    </span>
-                  </div>
+                  
                 </div>
 
                 <div className="pt-4 space-y-2">

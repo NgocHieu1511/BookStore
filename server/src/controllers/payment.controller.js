@@ -3,6 +3,7 @@ const mongoose = require("mongoose");
 const paymentModel = require("../models/payment.model");
 const cartModel = require("../models/cart.model");
 const couponModel = require("../models/coupon.model");
+const productModel = require("../models/product.model");
 const { NotFoundError, BadRequestError } = require("../core/error.response");
 const { Created, OK } = require("../core/success.response");
 const {
@@ -21,6 +22,31 @@ function generatePayID() {
   const seconds = now.getSeconds().toString().padStart(2, "0");
   const milliseconds = now.getMilliseconds().toString().padStart(3, "0");
   return `PAY${timestamp}${seconds}${milliseconds}`;
+}
+// Cập nhật số lượng sản phẩm đã bán
+async function updateCountBuy(products, multiplier = 1) {
+  if (!Array.isArray(products) || products.length === 0) {
+    return;
+  }
+
+  const operations = products
+    .filter((item) => item.productId && Number(item.quantity) > 0)
+    .map((item) => ({
+      updateOne: {
+        filter: {
+          _id: item.productId,
+        },
+        update: {
+          $inc: {
+            countBuy: Number(item.quantity) * multiplier,
+          },
+        },
+      },
+    }));
+
+  if (operations.length > 0) {
+    await productModel.bulkWrite(operations);
+  }
 }
 class PaymentController {
   async createPayment(req, res) {
@@ -52,6 +78,8 @@ class PaymentController {
         status: "pending",
         paymentMethod: "cod",
       });
+      // Cập nhật số lượng đã bán
+      await updateCountBuy(newPayment.products);
 
       await findCartUser.deleteOne();
       await cartModel.create({
@@ -223,6 +251,7 @@ class PaymentController {
       paymentMethod: "vnpay",
       status: "pending",
     });
+    await updateCountBuy(newPayment.products);
 
     await findCartUser.deleteOne();
     await cartModel.create({
@@ -265,6 +294,7 @@ class PaymentController {
       paymentMethod: "momo",
       status: "pending",
     });
+    await updateCountBuy(newPayment.products);
 
     await findCartUser.deleteOne();
     await cartModel.create({
@@ -323,8 +353,23 @@ async updatePayment(req, res) {
 
   // Không cho chuyển đơn đã hoàn thành hoặc đã hủy
   // sang trạng thái khác thông qua API thông thường.
- if (findPayment.status !== status) {
+if (findPayment.status !== status) {
+  const oldStatus = findPayment.status;
+
+  // Không cho phép thay đổi đơn đã hoàn thành hoặc đã hủy
+  if (["completed", "cancelled"].includes(oldStatus)) {
+    throw new BadRequestError(
+      "Đơn hàng đã hoàn thành hoặc đã hủy, không thể đổi trạng thái"
+    );
+  }
+
+  // Nếu hủy đơn, giảm số lượng đã bán
+  if (status === "cancelled") {
+    await updateCountBuy(findPayment.products, -1);
+  }
+
   findPayment.status = status;
+
   findPayment.statusHistory.push({
     status,
     changedAt: new Date(),

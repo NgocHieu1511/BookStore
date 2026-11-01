@@ -2,6 +2,7 @@ const categoryModel = require("../models/category.model");
 const cloudinary = require("../config/Cloudinary");
 const { Created, OK } = require("../core/success.response");
 const { BadRequestError, NotFoundError } = require("../core/error.response");
+const productModel = require("../models/product.model");
 
 const fs = require("fs/promises");
 
@@ -31,53 +32,32 @@ class CategoryController {
       metadata: newCategory,
     }).send(res);
   }
-  async getAllCategory(req, res) {
+ async getAllCategory(req, res) {
+    // Lấy danh sách tất cả danh mục
     const categories = await categoryModel.find();
-    return new OK({
-      message: "Lấy danh mục thành công",
-      metadata: categories,
-    }).send(res);
-  }
-  async updateCategory(req, res) {
-    const { id } = req.params;
-    const { nameCategory } = req.body;
-    if (!nameCategory || !id) {
-      throw new BadRequestError("Thiếu thông tin danh mục");
-    }
 
-    const findCategory = await categoryModel.findById(id);
-    if (!findCategory) {
-      throw new NotFoundError("Danh mục không tồn tại");
-    }
+    // Tính số lượng sản phẩm thuộc từng danh mục
+    const categoriesWithProductCount = await Promise.all(
+        categories.map(async (category) => {
+            // Đếm sản phẩm có categoryProduct bằng ID danh mục
+            const lengthProduct = await productModel.countDocuments({
+                categoryProduct: category._id,
+            });
 
-    let imageCategory = findCategory.imageCategory;
-
-    if (req.file) {
-      const { path, filename } = req.file;
-
-      const { url } = await cloudinary.uploader.upload(path, {
-        folder: "categorys",
-        resource_type: "image",
-      });
-
-      imageCategory = url || filename;
-
-      await fs.unlink(path);
-
-      await cloudinary.uploader.destroy(getPublicId(imageCategory));
-    }
-
-    const updateCategory = await categoryModel.findByIdAndUpdate(
-      id,
-      { nameCategory, imageCategory },
-      { new: true },
+            // Trả về danh mục kèm số lượng sản phẩm
+            return {
+                ...category.toObject(),
+                lengthProduct,
+            };
+        })
     );
 
+    // Trả dữ liệu về frontend
     return new OK({
-      message: "Cập nhật danh mục thành công",
-      metadata: updateCategory,
+        message: "Lấy danh mục thành công",
+        metadata: categoriesWithProductCount,
     }).send(res);
-  }
+}
 
   async deleteCategory(req, res) {
     const { id } = req.params;

@@ -1,20 +1,26 @@
 import { Link } from "react-router-dom";
 
 function ProductCard({ dataItem }) {
-  const discount = dataItem?.discountProduct || 0;
 
-  // Giá gốc
-  const oldPrice =
-    discount > 0
-      ? Math.round(dataItem.priceProduct / (1 - discount / 100))
-      : null;
 
-  // Số lượng đã bán
-  const soldQuantity = dataItem?.soldQuantity || 0;
+// Phần trăm giảm giá
+const discount = dataItem?.discountProduct || 0;
 
-  // Tính % thanh tiến trình
-  // Có thể thay đổi 500 thành số lượng bạn muốn
-  const soldPercent = Math.min((soldQuantity / 500) * 100, 100);
+// Giá gốc: giá nhập từ Admin
+const oldPrice = Number(dataItem?.priceProduct || 0);
+
+// Giá khuyến mại
+const salePrice =
+  discount > 0
+    ? Math.round(oldPrice * (1 - discount / 100))
+    : oldPrice;
+
+// Số lượng đã bán
+// Số lượng đã bán
+const soldQuantity = dataItem?.countBuy || 0;
+
+// Tính % thanh tiến trình
+const soldPercent = Math.min((soldQuantity / 500) * 100, 100);
 
   return (
     <div
@@ -101,36 +107,38 @@ function ProductCard({ dataItem }) {
         {dataItem?.nameProduct}
       </Link>
 
-      {/* =========================
-          PRICE
-      ========================= */}
-      <div className="mt-2 flex flex-col">
-        {/* Giá bán */}
-        <span
-          className="
-            text-[18px]
-            font-bold
-            leading-6
-            text-[#c92127]
-          "
-        >
-          {Number(dataItem?.priceProduct || 0).toLocaleString("vi-VN")} đ
-        </span>
+     {/* =========================
+    PRICE
+========================= */}
+<div className="mt-2 flex flex-col">
 
-        {/* Giá cũ */}
-        {oldPrice && (
-          <span
-            className="
-              text-sm
-              leading-5
-              text-[#5c403d]
-              line-through
-            "
-          >
-            {oldPrice.toLocaleString("vi-VN")} đ
-          </span>
-        )}
-      </div>
+  {/* Giá khuyến mại */}
+  <span
+    className="
+      text-[18px]
+      font-bold
+      leading-6
+      text-[#c92127]
+    "
+  >
+    {salePrice.toLocaleString("vi-VN")} đ
+  </span>
+
+  {/* Giá gốc */}
+  {discount > 0 && (
+    <span
+      className="
+        text-sm
+        leading-5
+        text-[#5c403d]
+        line-through
+      "
+    >
+      {oldPrice.toLocaleString("vi-VN")} đ
+    </span>
+  )}
+
+</div>
 
       {/* =========================
           SOLD PROGRESS

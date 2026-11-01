@@ -282,6 +282,7 @@ const handleAddToCart = async () => {
                   disabled:cursor-not-allowed
                   disabled:opacity-50
                 "
+                  onClick={handleAddToCart}
                 >
                   Mua ngay
                 </button>
@@ -354,14 +355,18 @@ const handleAddToCart = async () => {
               <div>
                 Nhà cung cấp:{" "}
                 <span className="font-bold text-blue-600">
-                  {metadata?.publisher || "Đang cập nhật"}
+                  {metadata?.company || "Đang cập nhật"}
                 </span>
               </div>
 
               <div>
                 Hình thức bìa:{" "}
                 <span className="font-bold">
-                  {metadata?.coverType || "Đang cập nhật"}
+                  {metadata?.type === 1 || metadata?.type === "1"
+    ? "Bìa cứng"
+    : metadata?.type === 2 || metadata?.type === "2"
+    ? "Bìa mềm"
+    : "Đang cập nhật"}
                 </span>
               </div>
             </div>
@@ -572,7 +577,11 @@ const handleAddToCart = async () => {
                   </th>
 
                   <td className="py-3">
-                    {metadata?.coverType || "Đang cập nhật"}
+                   {metadata?.type === 1 || metadata?.type === "1"
+    ? "Bìa cứng"
+    : metadata?.type === 2 || metadata?.type === "2"
+    ? "Bìa mềm"
+    : "Đang cập nhật"}
                   </td>
                 </tr>
 
@@ -584,17 +593,15 @@ const handleAddToCart = async () => {
                   <td className="py-3">{stock}</td>
                 </tr>
 
-                <tr>
-                  <th className="py-3 text-left font-normal text-gray-500">
-                    Danh mục
-                  </th>
+              <tr>
+    <th className="py-3 text-left font-normal text-gray-500">
+        Danh mục
+    </th>
 
-                  <td className="py-3">
-                    {product?.categoryProduct?.name ||
-                      product?.categoryProduct ||
-                      "Đang cập nhật"}
-                  </td>
-                </tr>
+    <td className="py-3">
+        {product?.categoryProduct?.nameCategory || "Đang cập nhật"}
+    </td>
+</tr>   
               </tbody>
             </table>
           </div>

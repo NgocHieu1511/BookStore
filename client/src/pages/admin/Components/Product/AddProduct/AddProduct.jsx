@@ -50,7 +50,7 @@ function AddProduct({ dataOneProduct, setTypeBack, setDataOneProduct }) {
     const [size, setSize] = useState('');
     const [page, setPage] = useState('');
     const [publishingHouse, setPublishingHouse] = useState('');
-
+    const [author, setAuthor] = useState('');
     const [valueCategory, setValueCategory] = useState('');
     const [selectCategory, setSelectCategory] = useState(null);
     const [dataCategory, setDataCategory] = useState([]);
@@ -139,6 +139,7 @@ function AddProduct({ dataOneProduct, setTypeBack, setDataOneProduct }) {
         setSize(metadata?.size ?? '');
         setPage(metadata?.page ?? '');
         setPublishingHouse(metadata?.publishingHouse ?? '');
+        setAuthor(metadata?.author ?? '');
 
         const categoryObj = dataOneProduct?.categoryProduct;
         if (typeof categoryObj === 'object' && categoryObj !== null) {
@@ -174,7 +175,7 @@ function AddProduct({ dataOneProduct, setTypeBack, setDataOneProduct }) {
             if (!selectCategory?._id) return toast.error('Vui lòng chọn danh mục');
             if (images.length === 0) return toast.error('Vui lòng chọn ít nhất một ảnh');
 
-            const metadata = { company, publicationDate, type, size, page, publishingHouse };
+            const metadata = { company, publicationDate, type, size, page, publishingHouse, author };
             const formData = new FormData();
 
             formData.append('nameProduct', name.trim());
@@ -223,7 +224,7 @@ function AddProduct({ dataOneProduct, setTypeBack, setDataOneProduct }) {
             if (!quantity) return toast.error('Vui lòng nhập số lượng');
             if (!selectCategory?._id) return toast.error('Vui lòng chọn danh mục');
 
-            const metadata = { company, publicationDate, type, size, page, publishingHouse };
+            const metadata = { company, publicationDate, type, size, page, publishingHouse,  author };
             const formData = new FormData();
 
             formData.append('id', productId);
@@ -247,7 +248,7 @@ function AddProduct({ dataOneProduct, setTypeBack, setDataOneProduct }) {
                 if (image instanceof File) formData.append('imagesProduct', image);
             });
 
-            const res = await updateProduct(formData);
+            const res = await updateProduct(productId, formData);
             toast.success(res?.message || 'Cập nhật sản phẩm thành công');
 
             setDataOneProduct({});
@@ -359,6 +360,13 @@ function AddProduct({ dataOneProduct, setTypeBack, setDataOneProduct }) {
                             variant="outlined"
                             onChange={(e) => setPublishingHouse(e.target.value)}
                             value={publishingHouse}
+                            fullWidth
+                        />
+                        <TextField
+                            label="Tác giả"
+                            variant="outlined"
+                            onChange={(e) => setAuthor(e.target.value)}
+                            value={author}
                             fullWidth
                         />
 
