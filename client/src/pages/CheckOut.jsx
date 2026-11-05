@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { message } from "antd";
 import {
@@ -19,22 +19,61 @@ import { requestUpdateInfoCart } from "../config/CartRequest";
 import { requestPayment } from "../config/paymentRequest";
 
 const Checkout = () => {
-  const { cart } = useStore();
+  const { cart, dataUser } = useStore();
   const navigate = useNavigate();
 
-  // ================= SHIPPING ADDRESS STATE =================
+  const savedAddresses = dataUser?.user?.addressDefault || [];
+
+  // ================= STATE =================
+  // null = chưa chọn, "manual" = nhập tay, còn lại = _id của địa chỉ đã lưu
+  const [selectedAddressId, setSelectedAddressId] = useState(null);
+
+  // Thông tin giao hàng
   const [receiverName, setReceiverName] = useState("");
   const [phone, setPhone] = useState("");
   const [email, setEmail] = useState("");
   const [address, setAddress] = useState("");
   const [note, setNote] = useState("");
 
-  // ================= OTHER STATE =================
+  // Các state khác
   const [shippingMethod, setShippingMethod] = useState("standard");
   const [paymentMethod, setPaymentMethod] = useState("cod");
   const [coupon, setCoupon] = useState("");
 
-  // Kiểm tra giỏ hàng rỗng
+  // ================= TỰ ĐIỀN TỪ USER =================
+  // Tự điền email và chọn sẵn địa chỉ đầu tiên khi có dữ liệu user
+  useEffect(() => {
+    const user = dataUser?.user;
+    if (!user) return;
+
+    setEmail((prev) => prev || user.email || "");
+
+    if (selectedAddressId === null && user.addressDefault?.length > 0) {
+      const first = user.addressDefault[0];
+      setSelectedAddressId(first._id);
+      setReceiverName(first.fullName);
+      setPhone(first.phone);
+      setAddress(first.address);
+    }
+  }, [dataUser]);
+
+  // Chọn một địa chỉ đã lưu
+  const handleSelectAddress = (item) => {
+    setSelectedAddressId(item._id);
+    setReceiverName(item.fullName);
+    setPhone(item.phone);
+    setAddress(item.address);
+  };
+
+  // Chuyển sang nhập địa chỉ khác
+  const handleManualAddress = () => {
+    setSelectedAddressId("manual");
+    setReceiverName("");
+    setPhone("");
+    setAddress("");
+  };
+
+  // Kiểm tra giỏ hàng rỗng (đặt SAU tất cả hook)
   if (!cart || !cart.cart) {
     return (
       <div className="min-h-screen bg-[#f0f2f5] text-gray-800 flex items-center justify-center">
@@ -95,8 +134,8 @@ const Checkout = () => {
       message.error("Vui lòng nhập họ và tên người nhận");
       return;
     }
-    if (!phone.trim()) {
-      message.error("Vui lòng nhập số điện thoại");
+    if (!/^[0-9]{10}$/.test(phone.trim())) {
+      message.error("Số điện thoại phải gồm đúng 10 chữ số");
       return;
     }
     if (!email.trim()) {
@@ -266,41 +305,137 @@ const Checkout = () => {
           <div className="lg:col-span-8 space-y-5">
             {/* ADDRESS SECTION */}
             <section className="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden">
-              <div className="px-5 pt-5">
-                <h2 className="text-base font-bold text-gray-800 uppercase pb-3 border-b border-gray-300">
-                  ĐỊA CHỈ GIAO HÀNG
+              <div className="bg-gray-50 px-5 py-3.5 border-b border-gray-200 flex items-center justify-between">
+                <h2 className="text-sm font-bold uppercase tracking-wider flex items-center gap-2.5">
+                  <span className="w-6 h-6 rounded-full bg-[#c92127] text-white flex items-center justify-center text-xs">
+                    1
+                  </span>
+                  Địa Chỉ Giao Hàng
                 </h2>
+                <button
+                  type="button"
+                  onClick={() => navigate("/address")}
+                  className="text-xs text-[#c92127] font-semibold hover:underline"
+                >
+                  + Quản lý địa chỉ
+                </button>
               </div>
 
               <div className="p-5 space-y-4">
-                <div className="grid grid-cols-1 md:grid-cols-[170px_1fr] items-center gap-3">
-                  <label className="text-sm text-gray-700">
-                    Họ và tên người nhận <span className="text-red-500">*</span>
-                  </label>
-                  <input
-                    type="text"
-                    value={receiverName}
-                    onChange={(e) => setReceiverName(e.target.value)}
-                    placeholder="Nhập họ và tên người nhận"
-                    required
-                    className="w-full h-10 px-4 border border-gray-300 rounded-md text-sm font-semibold text-gray-700 focus:outline-none focus:border-[#c92127] focus:ring-1 focus:ring-[#c92127]"
-                  />
-                </div>
+                {/* Danh sách địa chỉ đã lưu */}
+                {savedAddresses.length > 0 && (
+                  <div className="space-y-3">
+                    {savedAddresses.map((item) => {
+                      const active = selectedAddressId === item._id;
+                      return (
+                        <label
+                          key={item._id}
+                          className={`flex items-start gap-3 p-4 border rounded-lg cursor-pointer transition-all ${
+                            active
+                              ? "border-[#c92127] bg-[#fcf4f4]"
+                              : "border-gray-200 hover:border-gray-300"
+                          }`}
+                        >
+                          <input
+                            type="radio"
+                            name="savedAddress"
+                            checked={active}
+                            onChange={() => handleSelectAddress(item)}
+                            className="mt-1 accent-[#c92127]"
+                          />
+                          <div className="min-w-0">
+                            <div className="flex flex-wrap items-center gap-2 text-sm">
+                              <span className="font-bold text-gray-800">
+                                {item.fullName}
+                              </span>
+                              <span className="text-gray-500">
+                                {item.phone}
+                              </span>
+                            </div>
+                            <p className="text-xs text-gray-600 mt-1">
+                              {item.address}
+                            </p>
+                          </div>
+                        </label>
+                      );
+                    })}
 
-                <div className="grid grid-cols-1 md:grid-cols-[170px_1fr] items-center gap-3">
-                  <label className="text-sm text-gray-700">
-                    Số điện thoại <span className="text-red-500">*</span>
-                  </label>
-                  <input
-                    type="tel"
-                    value={phone}
-                    onChange={(e) => setPhone(e.target.value)}
-                    placeholder="Nhập số điện thoại"
-                    required
-                    className="w-full h-10 px-4 border border-gray-300 rounded-md text-sm font-semibold text-gray-700 focus:outline-none focus:border-[#c92127] focus:ring-1 focus:ring-[#c92127]"
-                  />
-                </div>
+                    {/* Nhập địa chỉ khác */}
+                    <label
+                      className={`flex items-center gap-3 p-4 border rounded-lg cursor-pointer transition-all ${
+                        selectedAddressId === "manual"
+                          ? "border-[#c92127] bg-[#fcf4f4]"
+                          : "border-gray-200 hover:border-gray-300"
+                      }`}
+                    >
+                      <input
+                        type="radio"
+                        name="savedAddress"
+                        checked={selectedAddressId === "manual"}
+                        onChange={handleManualAddress}
+                        className="accent-[#c92127]"
+                      />
+                      <span className="text-sm font-semibold text-gray-700">
+                        Giao đến địa chỉ khác
+                      </span>
+                    </label>
+                  </div>
+                )}
 
+                {/* Form nhập tay: chỉ hiện khi chưa có địa chỉ lưu hoặc chọn "địa chỉ khác" */}
+                {(savedAddresses.length === 0 ||
+                  selectedAddressId === "manual") && (
+                  <>
+                    <div className="grid grid-cols-1 md:grid-cols-[170px_1fr] items-center gap-3">
+                      <label className="text-sm text-gray-700">
+                        Họ và tên người nhận{" "}
+                        <span className="text-red-500">*</span>
+                      </label>
+                      <input
+                        type="text"
+                        value={receiverName}
+                        onChange={(e) => setReceiverName(e.target.value)}
+                        placeholder="Nhập họ và tên người nhận"
+                        required
+                        className="w-full h-10 px-4 border border-gray-300 rounded-md text-sm font-semibold text-gray-700 focus:outline-none focus:border-[#c92127] focus:ring-1 focus:ring-[#c92127]"
+                      />
+                    </div>
+
+                    <div className="grid grid-cols-1 md:grid-cols-[170px_1fr] items-center gap-3">
+                      <label className="text-sm text-gray-700">
+                        Số điện thoại <span className="text-red-500">*</span>
+                      </label>
+                      <input
+                        type="tel"
+                        value={phone}
+                        onChange={(e) =>
+                          setPhone(
+                            e.target.value.replace(/\D/g, "").slice(0, 10)
+                          )
+                        }
+                        placeholder="Nhập số điện thoại (10 số)"
+                        required
+                        className="w-full h-10 px-4 border border-gray-300 rounded-md text-sm font-semibold text-gray-700 focus:outline-none focus:border-[#c92127] focus:ring-1 focus:ring-[#c92127]"
+                      />
+                    </div>
+
+                    <div className="grid grid-cols-1 md:grid-cols-[170px_1fr] items-center gap-3">
+                      <label className="text-sm text-gray-700">
+                        Địa chỉ <span className="text-red-500">*</span>
+                      </label>
+                      <input
+                        type="text"
+                        value={address}
+                        onChange={(e) => setAddress(e.target.value)}
+                        placeholder="Nhập địa chỉ nhận hàng"
+                        required
+                        className="w-full h-10 px-4 border border-gray-300 rounded-md text-sm text-gray-700 focus:outline-none focus:border-[#c92127] focus:ring-1 focus:ring-[#c92127]"
+                      />
+                    </div>
+                  </>
+                )}
+
+                {/* Email luôn hiển thị */}
                 <div className="grid grid-cols-1 md:grid-cols-[170px_1fr] items-center gap-3">
                   <label className="text-sm text-gray-700">
                     Email <span className="text-red-500">*</span>
@@ -315,20 +450,7 @@ const Checkout = () => {
                   />
                 </div>
 
-                <div className="grid grid-cols-1 md:grid-cols-[170px_1fr] items-center gap-3">
-                  <label className="text-sm text-gray-700">
-                    Địa chỉ <span className="text-red-500">*</span>
-                  </label>
-                  <input
-                    type="text"
-                    value={address}
-                    onChange={(e) => setAddress(e.target.value)}
-                    placeholder="Nhập địa chỉ nhận hàng"
-                    required
-                    className="w-full h-10 px-4 border border-gray-300 rounded-md text-sm text-gray-700 focus:outline-none focus:border-[#c92127] focus:ring-1 focus:ring-[#c92127]"
-                  />
-                </div>
-
+                {/* Ghi chú */}
                 <div className="grid grid-cols-1 md:grid-cols-[170px_1fr] items-start gap-3">
                   <label className="text-sm text-gray-700 pt-2">Ghi chú</label>
                   <textarea
@@ -666,8 +788,6 @@ const Checkout = () => {
                   </span>
                 </div>
               </div>
-
-            
 
               {/* SUBMIT BUTTON */}
               <button

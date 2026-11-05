@@ -1,5 +1,5 @@
 import App from "../App";
-import DetailProduct from "../pages/DetailProduct";
+import DetailProduct from "../pages/DetailProduct/DetailProduct";
 import ForgotPassword from "../pages/ForgotPassword";
 import LoginUser from "../pages/LoginUser";
 import CartUser from "../pages/CartUser";
@@ -12,6 +12,7 @@ import OrderDetail from "../pages/OrderDetail";
 import Dashboard from "../pages/admin/DashBoard";
 import MyAccountLayout from "../pages/MyAccountLayout";
 import ProductCategory from "../pages/ProductCategory";
+import InfoUser from "../pages/InfoUser/InfoUser";
 
 const routes = [
   {
@@ -63,6 +64,31 @@ const routes = [
     path: "/admin",
     element: <Dashboard />,
   },
+  {
+        path: '/customer',
+        element: <InfoUser />,
+    },
+
+    {
+        path: '/order',
+        element: <InfoUser />,
+    },
+
+    {
+        path: '/review',
+        element: <InfoUser />,
+    },
+
+    {
+        path: '/favorite',
+        element: <InfoUser />,
+    },
+
+    {
+        path: '/address',
+        element: <InfoUser />,
+    },
+
 
 {
     path: "/account",
@@ -78,6 +104,10 @@ const routes = [
 {
   path: "/category/:id",
   element: <ProductCategory />,
+},
+{
+  path: "/info-user",
+  element: <InfoUser/>,
 }
 
 

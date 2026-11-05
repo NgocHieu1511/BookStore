@@ -26,13 +26,12 @@ function Header() {
 
  
 
-  const menus = [
-    "Bài viết",
-    "Liên hệ",
-    "Yêu thích",
-    "Giới thiệu",
-    
-  ];
+ const menus = [
+  { label: "Bài viết", path: "/" },
+  { label: "Liên hệ", path: "/" },
+  { label: "Yêu thích", path: "/favorite" }, // đổi path cho đúng route của bạn
+  { label: "Giới thiệu", path: "/" },
+];
   
   const HandleLogout = async() => {
       try {
@@ -49,12 +48,12 @@ function Header() {
     {
         key: 'profile',
         label: 'Thông tin cá nhân',
-        onClick: () => navigate('/account'),
+        onClick: () => navigate('/info-user'),
     },
     {
         key: 'bookings',
         label: 'Đơn hàng của tôi',
-        onClick: () => navigate('/account/my-orders'),
+        onClick: () => navigate('/order'),
     },
     {
         key: 'logout',
@@ -267,11 +266,11 @@ function Header() {
                             >
                                 <div className="flex items-center cursor-pointer gap-2">
                                     <Avatar
-                                        icon={<UserOutlined />}
-                                        className="bg-green-500 flex items-center justify-center"
-                                        size="large"
-                                        src={`${import.meta.env.VITE_API_URL}/uploads/avatars/${dataUser.avatar}`}
-                                    />
+                                     icon={<UserOutlined />}
+                                     className="bg-green-500 flex items-center justify-center"
+                                     size="large"
+                                     src={dataUser?.user?.avatar || undefined}
+                                     />
                                     <div className="hidden md:block">
                                         <span className="text-sm font-medium">{dataUser.user.fullName || 'Người dùng'}</span>
                                         <DownOutlined className="text-xs ml-1" />
@@ -475,44 +474,32 @@ function Header() {
 
           {/* Menu */}
           {menus.map((menu) => (
-            <a
-              key={menu}
-              href="#"
-              onClick={() => setActive(menu)}
-              className={`
-                relative
-                shrink-0
-                text-[13px]
-                font-semibold
-                whitespace-nowrap
-                transition-colors
-                pb-1
+  <Link
+    key={menu.label}
+    to={menu.path}
+    onClick={() => setActive(menu.label)}
+    className={`
+      relative
+      shrink-0
+      text-[13px]
+      font-semibold
+      whitespace-nowrap
+      transition-colors
+      pb-1
+      ${
+        active === menu.label
+          ? "text-[#c92127]"
+          : "text-gray-800 hover:text-[#c92127]"
+      }
+    `}
+  >
+    {menu.label}
 
-                ${
-                  active === menu
-                    ? "text-[#c92127]"
-                    : "text-gray-800 hover:text-[#c92127]"
-                }
-              `}
-            >
-              {menu}
-
-              {/* Active underline */}
-              {active === menu && (
-                <span
-                  className="
-                    absolute
-                    left-0
-                    right-0
-                    -bottom-0.5
-                    h-[2px]
-                    bg-[#c92127]
-                    rounded-full
-                  "
-                />
-              )}
-            </a>
-          ))}
+    {active === menu.label && (
+      <span className="absolute left-0 right-0 -bottom-0.5 h-[2px] rounded-full bg-[#c92127]" />
+    )}
+  </Link>
+))}
         </nav>
       </div>
     </header>

@@ -11,6 +11,10 @@ import {
   BookOpen,
   TrendingUp,
   Zap,
+  Truck,
+  ShieldCheck,
+  RefreshCcw,
+  Headset,
 } from "lucide-react";
 
 import { listCategory } from "../config/categoryRequest";
@@ -45,39 +49,32 @@ function HomePage() {
   }, []);
 
   // 8 danh mục hiển thị ở khu vực shortcut
-  const categoryShortcuts = [
+  const benefitItems = [
     {
-      name: "Sale Sinh Nhật",
-      icon: Gift,
-    },
-    {
-      name: "Back To School",
-      icon: GraduationCap,
-    },
-    {
-      name: "Mã Giảm Giá",
-      icon: Ticket,
-    },
-    {
-      name: "Gift Cards",
-      icon: CreditCard,
-    },
-    {
-      name: "Sản Phẩm Mới",
-      icon: Sparkles,
-    },
-    {
-      name: "Đồ Chơi",
-      icon: Gamepad2,
-    },
-    {
-      name: "Foreign Books",
-      icon: Languages,
-    },
-    {
-      name: "Manga",
-      icon: BookOpen,
-    },
+        icon: Truck,
+        title: "Giao Hàng Siêu Tốc",
+        description: "Nội thành 24h, freeship từ 250k",
+      },
+      {
+        icon: ShieldCheck,
+        title: "100% Sách Thật",
+        description: "Cam kết chính hãng từ NXB",
+      },
+      {
+        icon: RefreshCcw,
+        title: "Đổi Trả Dễ Dàng",
+        description: "30 ngày miễn phí thu hồi",
+      },
+      {
+        icon: Gift,
+        title: "Tích Lũy F-Point",
+        description: "Tích lũy 5% mỗi đơn mua",
+      },
+      {
+        icon: Headset,
+        title: "Hỗ Trợ Tận Tâm 24/7",
+        description: "Hotline 1900 636467 tư vấn",
+      },
   ];
 
   return (
@@ -87,57 +84,115 @@ function HomePage() {
             CATEGORY SHORTCUTS
         ====================================================== */}
         <section className="rounded-lg bg-white p-4 shadow-sm md:p-6">
-          <div className="grid grid-cols-4 gap-y-6 md:grid-cols-8">
-            {categoryShortcuts.map((item) => {
-              const Icon = item.icon;
+    <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 md:grid-cols-5 md:gap-2">
+        {benefitItems.map((item) => {
+            const Icon = item.icon;
 
-              return (
+            return (
+                <div
+                    key={item.title}
+                    className="
+                        group
+                        flex
+                        items-center
+                        gap-3
+                        rounded-lg
+                        p-2.5
+                        transition-colors
+                        hover:bg-gray-50
+                    "
+                >
+                    {/* Icon */}
+                    <div
+                        className="
+                            flex
+                            h-12
+                            w-12
+                            shrink-0
+                            items-center
+                            justify-center
+                            rounded-full
+                            bg-[#FFD6D6]/40
+                            text-[#c92127]
+                            transition
+                            group-hover:bg-[#FFD6D6]
+                        "
+                    >
+                        <Icon size={26} strokeWidth={1.8} />
+                    </div>
+
+                    {/* Nội dung */}
+                    <div className="flex min-w-0 flex-col">
+                        <span className="truncate text-sm font-bold text-[#191c1d]">
+                            {item.title}
+                        </span>
+
+                        <span className="text-[11px] leading-tight text-gray-500">
+                            {item.description}
+                        </span>
+                    </div>
+                </div>
+            );
+        })}
+    </div>
+</section>
+ {/* =====================================================
+            CATEGORIES FROM API
+        ====================================================== */}
+        {categories.length > 0 && (
+          <section className="rounded-lg bg-white p-4 shadow-sm md:p-6">
+            <div className="mb-5 flex items-center justify-between border-b border-gray-200 pb-3">
+              <h2 className="text-xl font-bold uppercase text-[#191c1d]">
+                Danh Mục Sản Phẩm
+              </h2>
+
+              <button className="text-sm font-semibold text-[#a30014] hover:underline">
+                Xem tất cả
+              </button>
+            </div>
+
+            <div className="grid grid-cols-2 gap-4 md:grid-cols-4 lg:grid-cols-6">
+              {categories.map((category) => (
                 <button
-                  key={item.name}
+                  key={category._id}
                   className="
                     group
                     flex
                     flex-col
                     items-center
                     gap-3
+                    rounded-lg
+                    border
+                    border-gray-200
+                    p-4
                     transition
-                    hover:text-[#a30014]
+                    hover:border-[#a30014]
+                    hover:shadow-md
                   "
                 >
-                  <div
-                    className="
-                      flex
-                      h-12
-                      w-12
-                      items-center
-                      justify-center
-                      rounded-full
-                      bg-[#f2f4f5]
-                      transition
-                      group-hover:shadow-md
-                      md:h-16
-                      md:w-16
-                    "
-                  >
-                    <Icon size={28} className="text-[#a30014] md:h-8 md:w-8" />
+                  <div className="h-20 w-20 overflow-hidden rounded-full bg-[#f2f4f5]">
+                    <img
+                      src={category.imageCategory}
+                      alt={category.nameCategory}
+                      className="
+                        h-full
+                        w-full
+                        object-cover
+                        transition
+                        duration-300
+                        group-hover:scale-110
+                      "
+                    />
                   </div>
 
-                  <span
-                    className="
-                      text-center
-                      text-xs
-                      font-semibold
-                      text-[#191c1d]
-                      md:text-sm
-                    "
-                  >
-                    {item.name}
+                  <span className="text-center text-sm font-semibold text-[#191c1d] group-hover:text-[#a30014]">
+                    {category.nameCategory}
                   </span>
                 </button>
-              );
-            })}
-          </div>
-        </section>
+              ))}
+            </div>
+          </section>
+        )}
 
         {/* =====================================================
             FLASH SALE
@@ -349,63 +404,7 @@ function HomePage() {
           )}
         </section>
 
-        {/* =====================================================
-            CATEGORIES FROM API
-        ====================================================== */}
-        {categories.length > 0 && (
-          <section className="rounded-lg bg-white p-4 shadow-sm md:p-6">
-            <div className="mb-5 flex items-center justify-between border-b border-gray-200 pb-3">
-              <h2 className="text-xl font-bold uppercase text-[#191c1d]">
-                Danh Mục Sản Phẩm
-              </h2>
-
-              <button className="text-sm font-semibold text-[#a30014] hover:underline">
-                Xem tất cả
-              </button>
-            </div>
-
-            <div className="grid grid-cols-2 gap-4 md:grid-cols-4 lg:grid-cols-6">
-              {categories.map((category) => (
-                <button
-                  key={category._id}
-                  className="
-                    group
-                    flex
-                    flex-col
-                    items-center
-                    gap-3
-                    rounded-lg
-                    border
-                    border-gray-200
-                    p-4
-                    transition
-                    hover:border-[#a30014]
-                    hover:shadow-md
-                  "
-                >
-                  <div className="h-20 w-20 overflow-hidden rounded-full bg-[#f2f4f5]">
-                    <img
-                      src={category.imageCategory}
-                      alt={category.nameCategory}
-                      className="
-                        h-full
-                        w-full
-                        object-cover
-                        transition
-                        duration-300
-                        group-hover:scale-110
-                      "
-                    />
-                  </div>
-
-                  <span className="text-center text-sm font-semibold text-[#191c1d] group-hover:text-[#a30014]">
-                    {category.nameCategory}
-                  </span>
-                </button>
-              ))}
-            </div>
-          </section>
-        )}
+       
 
         {/* =====================================================
             PARTNERSHIP BANNER

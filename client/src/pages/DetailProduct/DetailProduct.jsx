@@ -1,8 +1,9 @@
-import Header from "../components/Header";
-import Footer from "../components/Footer";
+import Header from "../../components/Header";
+import Footer from "../../components/Footer";
 import { useParams, useNavigate } from "react-router-dom";
 import { useEffect, useState } from "react";
-import { productDetail } from "../config/productRequest";
+import { productDetail } from "../../config/productRequest";
+import {  requestGetHeartProduct,requestHeartProduct } from '../../config/userRequest';
 
 import {
   ShoppingCart,
@@ -13,9 +14,11 @@ import {
   Plus,
   Zap,
 } from "lucide-react";
-import { useStore } from "../hooks/useStore";
-import { requestAddToCart } from "../config/CartRequest";
+import { useStore } from "../../hooks/useStore";
+import { requestAddToCart } from "../../config/CartRequest";
 import { message } from "antd";
+import CustomerReviews from "./components/CustomerReviews";
+import RelatedProducts from "./components/RelatedProducts";
 
 function DetailProduct() {
   const { id } = useParams();
@@ -25,28 +28,76 @@ function DetailProduct() {
   const [quantity, setQuantity] = useState(1);
   const [selectedImage, setSelectedImage] = useState(0);
   const { dataUser , getCart  } = useStore();
+  const [dataHeartProducts, setDataHeartProducts] = useState([]);
+  const isFavorite = dataHeartProducts.includes(product?._id);
+  // Danh sách sản phẩm liên quan
+const [relatedProducts, setRelatedProducts] = useState([]);
+
+// Danh sách đánh giá khách hàng
+const [feedbackUser, setFeedbackUser] = useState([]);
+  
+
 
   // ==============================
   // LẤY CHI TIẾT SẢN PHẨM
   // ==============================
-  const fetchProductDetail = async () => {
-    try {
-      // setLoading(true);
 
-      const res = await productDetail(id);
+ const fetchProductDetail = async () => {
+  try {
+    const res = await productDetail(id);
 
-      console.log("Product detail:", res);
+    console.log("Product detail:", res);
 
-      setProduct(res?.metadata?.product || res?.metadata || res?.data || res);
-    } catch (error) {
-      console.error("Lỗi lấy chi tiết sản phẩm:", error);
-    } finally {
-      setLoading(false);
-    }
-  };
+    // Lấy sản phẩm chính
+    const productData =
+      res?.metadata?.product ||
+      res?.metadata ||
+      res?.data ||
+      res;
+
+    setProduct(productData);
+
+    // Lấy danh sách sản phẩm liên quan
+    const relatedData =
+      res?.metadata?.brandProducts ||
+      res?.brandProducts ||
+      res?.metadata?.relatedProducts ||
+      res?.relatedProducts ||
+      [];
+
+    setRelatedProducts(
+      Array.isArray(relatedData) ? relatedData : []
+    );
+
+    // Lấy danh sách đánh giá khách hàng
+    const feedbackData =
+      res?.metadata?.feedbackUser ||
+      res?.feedbackUser ||
+      [];
+
+    setFeedbackUser(
+      Array.isArray(feedbackData) ? feedbackData : []
+    );
+
+  } catch (error) {
+    console.error("Lỗi lấy chi tiết sản phẩm:", error);
+  } finally {
+    setLoading(false);
+  }
+};
+  const getHeartProduct = async () => {
+  try {
+    const res = await requestGetHeartProduct();
+    const list = Array.isArray(res) ? res : res?.data || res?.metadata || [];
+    setDataHeartProducts(list);
+  } catch (error) {
+    console.error("Lỗi lấy sản phẩm yêu thích:", error);
+  }
+};
 
   useEffect(() => {
     if (!id) return undefined;
+    getHeartProduct();
 
     Promise.resolve().then(() => fetchProductDetail());
 
@@ -136,6 +187,15 @@ const handleAddToCart = async () => {
     message.success(res.message);
   } catch (error) {
     message.error(error?.response?.data?.message || "Thêm thất bại");
+  }
+};
+ const handleHeartProduct = async () => {
+  try {
+    const res = await requestHeartProduct(id);
+    message.success(res?.message || "Thành công");
+    await getHeartProduct(); // cập nhật lại danh sách để đổi nút
+  } catch (error) {
+    message.error(error?.response?.data?.message || "Có lỗi xảy ra");
   }
 };
 
@@ -268,24 +328,13 @@ const handleAddToCart = async () => {
                   Thêm vào giỏ
                 </button>
 
-                <button
-                  disabled={stock <= 0}
-                  className="
-                  flex-1
-                  rounded
-                  bg-[#c92127]
-                  py-3
-                  font-bold
-                  text-white
-                  transition
-                  hover:bg-red-700
-                  disabled:cursor-not-allowed
-                  disabled:opacity-50
-                "
-                  onClick={handleAddToCart}
-                >
-                  Mua ngay
-                </button>
+                
+<button
+  onClick={handleHeartProduct}
+  className="flex-1 rounded border-2 border-[#ff424e] bg-[#ff424e] py-3 font-bold text-white transition hover:bg-[#e63a45]"
+>
+  {isFavorite ? "Xoá yêu thích" : "Yêu thích sản phẩm"}
+</button>
               </div>
             )}
 
@@ -625,6 +674,17 @@ const handleAddToCart = async () => {
             />
           </div>
         </div>
+        {/* ==============================
+    SẢN PHẨM LIÊN QUAN
+============================== */}
+
+<RelatedProducts products={relatedProducts} />
+
+{/* ==============================
+    ĐÁNH GIÁ KHÁCH HÀNG
+============================== */}
+
+<CustomerReviews reviews={feedbackUser} />
       </main>
 
       {/* FOOTER */}

@@ -6,6 +6,7 @@ const getPublicId = require("../utils/getPublicId");
 
 const productModel = require("../models/product.model");
 // const feedbackModel = require("../models/feedback.model");
+const { attachRatings, getFeedbackByProduct } = require("../utils/feedbackHelper");
 
 class ProductController {
   async createProduct(req, res) {
@@ -61,7 +62,8 @@ class ProductController {
   }
 
   async getAllProduct(req, res) {
-    const products = await productModel.find().populate('categoryProduct', 'nameCategory');
+    const products = await productModel.find().populate('categoryProduct', 'nameCategory').lean();
+    const data = await attachRatings(products);
     return new OK({
       message: "Lấy danh sách sản phẩm thành công",
       metadata: products,
@@ -153,7 +155,7 @@ class ProductController {
     const product = await productModel
         .findById(id)
         .populate("categoryProduct", "nameCategory");
-    // const feedbacks = await feedbackModel.find({ productId: id });
+    const feedbackUser = await getFeedbackByProduct(product._id);
     if (!product) {
       throw new NotFoundError("Sản phẩm không tồn tại");
     }
@@ -161,7 +163,7 @@ class ProductController {
     return new OK({
       message: "Lấy thông tin sản phẩm thành công",
       // metadata: { product, feedbacks },
-      metadata: { product },
+      metadata: { product, feedbackUser },
     }).send(res);
   }
 

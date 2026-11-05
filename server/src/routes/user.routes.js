@@ -63,8 +63,8 @@ router.post("/address", authUser, AsyncHandler(usersController.createAddress));
 router.put("/address/:idAddress", authUser, AsyncHandler(usersController.updateAddress));
 router.delete("/address/:idAddress", authUser, AsyncHandler(usersController.deleteAddress));
 
-router.post("/heart", authUser, AsyncHandler(usersController.heartProduct));
-router.get("/heart", authUser, AsyncHandler(usersController.getHeartProduct));
+router.post("/heart-product", authUser, AsyncHandler(usersController.heartProduct));
+router.get("/get-heart-product", authUser, AsyncHandler(usersController.getHeartProduct));
 router.get("/heart/detail", authUser, AsyncHandler(usersController.getHeartProductUser));
 
 /* ---------- Admin ---------- */

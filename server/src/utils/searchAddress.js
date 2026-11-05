@@ -1,25 +1,41 @@
-require("dotenv").config();
+const axios = require('axios');
 
-// Gợi ý địa chỉ qua Goong AutoComplete. Dùng fetch có sẵn của Node 18+ nên không cần cài axios.
-// Cần thêm GOONG_API_KEY vào .env
 const searchAddress = async (address) => {
-  const url = new URL("https://rsapi.goong.io/Place/AutoComplete");
-  url.searchParams.set("input", address);
-  url.searchParams.set("api_key", process.env.GOONG_API_KEY || "");
+    if (!address || address.trim().length < 3) return [];
 
-  const controller = new AbortController();
-  const timer = setTimeout(() => controller.abort(), 5000); // tối đa 5 giây
+    try {
+        const response = await axios.get('https://photon.komoot.io/api/', {
+            params: {
+                q: `${address}, Việt Nam`,
+                limit: 5,
+            },
+            timeout: 10000,
+        });
 
-  try {
-    const response = await fetch(url, { signal: controller.signal });
-    if (!response.ok) return [];
-    const data = await response.json();
-    return Array.isArray(data.predictions) ? data.predictions : [];
-  } catch {
-    return [];
-  } finally {
-    clearTimeout(timer);
-  }
+        return response.data.features.map((f) => {
+            const p = f.properties;
+            const description = [
+                p.name,
+                [p.housenumber, p.street].filter(Boolean).join(' '),
+                p.district,
+                p.city,
+                p.state,
+                p.country,
+            ]
+                .filter(Boolean)
+                .join(', ');
+
+            return {
+                description,
+                place_id: p.osm_id,
+                lat: f.geometry.coordinates[1], // Photon trả [lng, lat]
+                lng: f.geometry.coordinates[0],
+            };
+        });
+    } catch (error) {
+        console.error('Lỗi tìm kiếm địa chỉ:', error.code || error.message);
+        return [];
+    }
 };
 
 module.exports = searchAddress;

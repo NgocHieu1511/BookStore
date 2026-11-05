@@ -44,7 +44,14 @@ export const requestAdminPaymentDetail = async (orderId) => {
 };
   
 // Lấy danh sách đơn hàng của khách hàng đang đăng nhập
-export const requestMyPayments = async () => {
-  const res = await apiClient.get("/api/payment/my-orders");
+export const requestMyPayments = async (status) => {
+  const res = await apiClient.get("/api/payment/my-orders", {
+        params: { status },
+    });
+  return res.data;
+};
+// KHÁCH HÀNG: Tự hủy đơn hàng
+export const requestCancelMyPayment = async (orderId, note) => {
+  const res = await apiClient.patch(`/api/payment/cancel/${orderId}`, { note });
   return res.data;
 };

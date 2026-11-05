@@ -78,8 +78,7 @@ class PaymentController {
         status: "pending",
         paymentMethod: "cod",
       });
-      // Cập nhật số lượng đã bán
-      await updateCountBuy(newPayment.products);
+     
 
       await findCartUser.deleteOne();
       await cartModel.create({
@@ -251,7 +250,7 @@ class PaymentController {
       paymentMethod: "vnpay",
       status: "pending",
     });
-    await updateCountBuy(newPayment.products);
+    // await updateCountBuy(newPayment.products);
 
     await findCartUser.deleteOne();
     await cartModel.create({
@@ -294,7 +293,7 @@ class PaymentController {
       paymentMethod: "momo",
       status: "pending",
     });
-    await updateCountBuy(newPayment.products);
+    // await updateCountBuy(newPayment.products);
 
     await findCartUser.deleteOne();
     await cartModel.create({
@@ -322,7 +321,7 @@ class PaymentController {
   // ADMIN: CẬP NHẬT TRẠNG THÁI ĐƠN HÀNG
 async updatePayment(req, res) {
   const { orderId } = req.params;
- const { status, note } = req.body;
+  const { status, note } = req.body;
 
   const allowedStatuses = [
     "pending",
@@ -333,16 +332,15 @@ async updatePayment(req, res) {
     "cancelled",
   ];
 
+  // Các trạng thái được tính vào số lượng đã bán
+  const countedStatuses = ["delivered", "completed"];
+
   if (!orderId || !status) {
-    throw new BadRequestError(
-      "Vui lòng cung cấp mã đơn hàng và trạng thái"
-    );
+    throw new BadRequestError("Vui lòng cung cấp mã đơn hàng và trạng thái");
   }
 
   if (!allowedStatuses.includes(status)) {
-    throw new BadRequestError(
-      "Trạng thái đơn hàng không hợp lệ"
-    );
+    throw new BadRequestError("Trạng thái đơn hàng không hợp lệ");
   }
 
   const findPayment = await paymentModel.findById(orderId);
@@ -351,31 +349,37 @@ async updatePayment(req, res) {
     throw new NotFoundError("Đơn hàng không tồn tại");
   }
 
-  // Không cho chuyển đơn đã hoàn thành hoặc đã hủy
-  // sang trạng thái khác thông qua API thông thường.
-if (findPayment.status !== status) {
-  const oldStatus = findPayment.status;
+  if (findPayment.status !== status) {
+    const oldStatus = findPayment.status;
 
-  // Không cho phép thay đổi đơn đã hoàn thành hoặc đã hủy
-  if (["completed", "cancelled"].includes(oldStatus)) {
-    throw new BadRequestError(
-      "Đơn hàng đã hoàn thành hoặc đã hủy, không thể đổi trạng thái"
-    );
+    // Không cho đổi đơn đã hoàn thành hoặc đã hủy
+    if (["completed", "cancelled"].includes(oldStatus)) {
+      throw new BadRequestError(
+        "Đơn hàng đã hoàn thành hoặc đã hủy, không thể đổi trạng thái"
+      );
+    }
+
+    const wasCounted = countedStatuses.includes(oldStatus);
+    const willCount = countedStatuses.includes(status);
+
+    // Chưa tính -> được tính (giao hàng): cộng countBuy
+    if (!wasCounted && willCount) {
+      await updateCountBuy(findPayment.products, 1);
+    }
+
+    // Đã tính -> không còn được tính (hủy sau khi giao): trừ lại countBuy
+    if (wasCounted && !willCount) {
+      await updateCountBuy(findPayment.products, -1);
+    }
+
+    findPayment.status = status;
+    findPayment.statusHistory.push({
+      status,
+      changedAt: new Date(),
+      note: note || "",
+    });
   }
 
-  // Nếu hủy đơn, giảm số lượng đã bán
-  if (status === "cancelled") {
-    await updateCountBuy(findPayment.products, -1);
-  }
-
-  findPayment.status = status;
-
-  findPayment.statusHistory.push({
-    status,
-    changedAt: new Date(),
-    note: note || "",
-  });
-}
   await findPayment.save();
 
   return new OK({
@@ -503,9 +507,25 @@ async getPaymentDetailAdmin(req, res) {
 // KHÁCH HÀNG: LẤY DANH SÁCH ĐƠN HÀNG CỦA MÌNH
 async getMyPayments(req, res) {
   const userId = req.user;
+  const { status } = req.query;
+
+  const allowedStatuses = [
+    "pending",
+    "confirmed",
+    "delivered",
+    "completed",
+    "cancelled",
+  ];
+
+  const filter = { userId };
+
+  // Chỉ lọc khi status hợp lệ (tab "all" thì không lọc)
+  if (status && allowedStatuses.includes(status)) {
+    filter.status = status;
+  }
 
   const orders = await paymentModel
-    .find({ userId })
+    .find(filter)
     .populate(
       "products.productId",
       "nameProduct priceProduct discountProduct imagesProduct"
@@ -534,6 +554,48 @@ async getMyPayments(req, res) {
             metadata: findPayment,
         }).send(res);
     }
+    // KHÁCH HÀNG: TỰ HỦY ĐƠN HÀNG
+async cancelMyPayment(req, res) {
+  const userId = req.user;
+  const { orderId } = req.params;
+  const { note } = req.body;
+
+  if (!mongoose.Types.ObjectId.isValid(orderId)) {
+    throw new BadRequestError("Mã đơn hàng không hợp lệ");
+  }
+
+  // Chỉ tìm đơn thuộc về chính user này
+  const findPayment = await paymentModel.findOne({ _id: orderId, userId });
+
+  if (!findPayment) {
+    throw new NotFoundError("Đơn hàng không tồn tại");
+  }
+
+  // Khách chỉ được hủy khi đơn chưa được xử lý
+  if (!["pending", "confirmed"].includes(findPayment.status)) {
+    throw new BadRequestError("Đơn hàng đang giao hoặc đã xử lý, không thể hủy");
+  }
+
+  findPayment.status = "cancelled";
+  findPayment.statusHistory.push({
+    status: "cancelled",
+    changedAt: new Date(),
+    note: note || "Khách hàng hủy đơn",
+  });
+  await findPayment.save();
+
+  // Hoàn lại lượt dùng coupon (nếu có)
+  if (findPayment.couponId) {
+    await couponModel.findByIdAndUpdate(findPayment.couponId, {
+      $inc: { quantity: 1 },
+    });
+  }
+
+  return new OK({
+    message: "Hủy đơn hàng thành công",
+    metadata: findPayment,
+  }).send(res);
+}
 }
 
 module.exports = new PaymentController();

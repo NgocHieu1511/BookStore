@@ -34,5 +34,11 @@ router.get(
   authUser,
   AsyncHandler(paymentController.getMyPayments)
 );
+// KHÁCH HÀNG: TỰ HỦY ĐƠN HÀNG
+router.patch(
+  "/cancel/:orderId",
+  authUser,
+  AsyncHandler(paymentController.cancelMyPayment)
+);
 
 module.exports = router;

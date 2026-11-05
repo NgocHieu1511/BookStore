@@ -60,34 +60,42 @@ function LoginUser() {
   // =========================
   // HANDLE LOGIN
   // =========================
-  const onFinish = async (e) => {
-    e.preventDefault();
+ const onFinish = async (e) => {
+  e.preventDefault();
 
-    // Kiểm tra dữ liệu
-    if (!loginData.email || !loginData.password) {
-      message.error("Vui lòng nhập đầy đủ email và mật khẩu!");
-      return;
-    }
+  if (!loginData.email || !loginData.password) {
+    message.error("Vui lòng nhập đầy đủ email và mật khẩu!");
+    return;
+  }
 
-    setLoading(true);
+  setLoading(true);
 
-    try {
-      await requestLogin(loginData);
+  try {
+    const response = await requestLogin(loginData);
 
-      message.success("Đăng nhập thành công!");
+    // Lấy thông tin người dùng từ response
+    const user = response?.user || response?.data?.user;
 
-      setTimeout(() => {
+    message.success("Đăng nhập thành công!");
+
+    // Điều hướng theo quyền tài khoản
+    setTimeout(() => {
+      if (user?.isAdmin === true) {
+        navigate("/admin");
+      } else {
         navigate("/");
-        window.location.reload();
-      }, 1000);
-    } catch (error) {
-      message.error(error.response?.data?.message || "Đăng nhập thất bại!");
+      }
+    }, 500);
 
-      console.error("Login error:", error);
-    } finally {
-      setLoading(false);
-    }
-  };
+  } catch (error) {
+    message.error(
+      error.response?.data?.message || "Đăng nhập thất bại!"
+    );
+    console.error("Login error:", error);
+  } finally {
+    setLoading(false);
+  }
+};
   const handleGoogleSuccess = async (credentialResponse) => {
   try {
     setLoading(true);
@@ -370,78 +378,34 @@ function LoginUser() {
                   </button>
                 </form>
 
-                {/* =========================
-                    SOCIAL LOGIN
-                ========================= */}
-                <div className="mt-8">
-                  <div className="relative mb-6 flex items-center justify-center">
-                    <div className="absolute inset-0 flex items-center">
-                      <div className="w-full border-t border-gray-200" />
-                    </div>
+             
+{/* =========================
+    SOCIAL LOGIN
+========================= */}
+<div className="mt-8">
+  <div className="relative mb-6 flex items-center justify-center">
+    <div className="absolute inset-0 flex items-center">
+      <div className="w-full border-t border-gray-200" />
+    </div>
 
-                    <div className="relative bg-white px-4 text-sm text-gray-500">
-                      Hoặc đăng nhập bằng
-                    </div>
-                  </div>
+    <div className="relative bg-white px-4 text-sm text-gray-500">
+      Hoặc đăng nhập bằng
+    </div>
+  </div>
 
-                  <div className="flex justify-center gap-4">
-                    {/* FACEBOOK */}
-                    <button
-                      type="button"
-                      className="
-                        flex
-                        h-12
-                        w-12
-                        items-center
-                        justify-center
-                        rounded-full
-                        border
-                        border-gray-200
-                        bg-white
-                        text-lg
-                        font-bold
-                        text-[#1877F2]
-                        transition
-                        hover:bg-gray-100
-                      "
-                    >
-                      f
-                    </button>
+  <div className="flex justify-center">
+    <GoogleLogin
+      onSuccess={handleGoogleSuccess}
+      onError={() => message.error("Đăng nhập Google thất bại!")}
+      size="large"
+      text="continue_with"
+      shape="pill"
+      theme="outline"
+      width="320"
+    />
+  </div>
+</div>
 
-                    {/* GOOGLE */}
-                  {/* GOOGLE */}
-<GoogleLogin
-  onSuccess={handleGoogleSuccess}
-  onError={() => message.error("Đăng nhập Google thất bại!")}
-  type="icon"
-  shape="circle"
-  theme="outline"
-/>
-
-                    {/* APPLE */}
-                    <button
-                      type="button"
-                      className="
-                        flex
-                        h-12
-                        w-12
-                        items-center
-                        justify-center
-                        rounded-full
-                        border
-                        border-gray-200
-                        bg-white
-                        text-lg
-                        font-bold
-                        text-black
-                        transition
-                        hover:bg-gray-100
-                      "
-                    >
-                      
-                    </button>
-                  </div>
-                </div>
               </div>
             )}
 
