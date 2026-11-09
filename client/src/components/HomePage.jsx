@@ -2,13 +2,7 @@ import { useEffect, useState } from "react";
 import {
   ChevronRight,
   Gift,
-  GraduationCap,
-  Ticket,
-  CreditCard,
-  Sparkles,
-  Gamepad2,
-  Languages,
-  BookOpen,
+  
   TrendingUp,
   Zap,
   Truck,
@@ -20,6 +14,7 @@ import {
 import { listCategory } from "../config/categoryRequest";
 import { listProducts } from "../config/productRequest";
 import ProductCard from "./ProductCard";
+import WeeklyBestSeller from "./WeeklyBestSeller";
 
 function HomePage() {
   const [categories, setCategories] = useState([]);
@@ -317,7 +312,7 @@ function HomePage() {
                 md:text-3xl
               "
             >
-              New Arrivals
+              Sản phẩm nổi bật
             </h2>
 
             <button
@@ -403,6 +398,10 @@ function HomePage() {
             <p className="text-gray-500">No products found.</p>
           )}
         </section>
+        {/* =====================================================
+            WEEKLY BEST SELLER
+        ====================================================== */}
+        <WeeklyBestSeller/>
 
        
 

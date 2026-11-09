@@ -34,3 +34,7 @@ export const getProductsByCategory = async (idCategory) => {
 const res = await request.get(`${apiProduct}/list/${idCategory}`);
 return res.data;
 };
+export const searchProducts = async (params, signal) => {
+  const res = await request.get(`${apiProduct}/search`, { params, signal });
+  return res.data; // dữ liệu nằm ở res.data.metadata
+};

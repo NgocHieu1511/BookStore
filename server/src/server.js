@@ -13,7 +13,10 @@ app.use(
 );
 const routes = require("./routes/index.routes");
 
-connectDB();
+const { setupMeili } = require("./config/meiliSearch");
+connectDB()
+  .then(setupMeili)
+  .catch((e) => console.error("[Meili] setup lỗi:", e.message));
 app.get("/", (req, res) => {
   return res.json({
     message: "ok",

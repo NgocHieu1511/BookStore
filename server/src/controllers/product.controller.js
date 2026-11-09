@@ -3,10 +3,13 @@ const { Created, OK } = require("../core/success.response");
 const { NotFoundError, BadRequestError } = require("../core/error.response");
 
 const getPublicId = require("../utils/getPublicId");
+const productSearch = require("../services/productSearch.service");
 
 const productModel = require("../models/product.model");
 // const feedbackModel = require("../models/feedback.model");
 const { attachRatings, getFeedbackByProduct } = require("../utils/feedbackHelper");
+// Lỗi search không được làm hỏng thao tác của admin
+const safe = (promise) => promise.catch((e) => console.error("[Meili]", e.message));
 
 class ProductController {
   async createProduct(req, res) {
@@ -54,6 +57,7 @@ class ProductController {
       metadata: JSON.parse(metadata),
       imagesProduct,
     });
+    safe(productSearch.indexProduct(newProduct._id));
 
     return new Created({
       message: "Tạo sản phẩm thành công",
@@ -143,6 +147,7 @@ class ProductController {
     if (!updateProduct) {
       throw new NotFoundError("Cập nhật sản phẩm thất bại");
     }
+    safe(productSearch.indexProduct(id));
 
     return new OK({
       message: "Cập nhật thông tin sản phẩm thành công",
@@ -151,21 +156,33 @@ class ProductController {
   }
 
   async getProductById(req, res) {
-    const { id } = req.params;
-    const product = await productModel
-        .findById(id)
-        .populate("categoryProduct", "nameCategory");
-    const feedbackUser = await getFeedbackByProduct(product._id);
-    if (!product) {
-      throw new NotFoundError("Sản phẩm không tồn tại");
-    }
+  const { id } = req.params;
 
-    return new OK({
-      message: "Lấy thông tin sản phẩm thành công",
-      // metadata: { product, feedbacks },
-      metadata: { product, feedbackUser },
-    }).send(res);
+  const product = await productModel
+    .findById(id)
+    .populate("categoryProduct", "nameCategory");
+
+  // Kiểm tra null TRƯỚC khi dùng product._id
+  if (!product) {
+    throw new NotFoundError("Sản phẩm không tồn tại");
   }
+
+  const feedbackUser = await getFeedbackByProduct(product._id);
+
+  // Sản phẩm liên quan: cùng danh mục, loại trừ sản phẩm hiện tại
+  const relatedProducts = await productModel
+    .find({
+      categoryProduct: product.categoryProduct?._id || product.categoryProduct,
+      _id: { $ne: product._id },
+    })
+    .sort({ countBuy: -1 })
+    .limit(10);
+
+  return new OK({
+    message: "Lấy thông tin sản phẩm thành công",
+    metadata: { product, feedbackUser, relatedProducts },
+  }).send(res);
+}
 
   async deleteProduct(req, res) {
     const { id } = req.params;
@@ -183,6 +200,7 @@ class ProductController {
     }
 
     await findProduct.deleteOne();
+    safe(productSearch.removeProduct(id));
 
     return new OK({
       message: "Xóa sản phẩm thành công",
@@ -205,6 +223,21 @@ class ProductController {
       metadata: product,
     }).send(res);
   }
+  async searchProduct(req, res) {
+  const { q, page, limit, category, sort, minPrice, maxPrice } = req.query;
+  const params = {
+    q: typeof q === "string" ? q : "",
+    page, limit, categoryId: category, sort, minPrice, maxPrice,
+  };
+  let data;
+  try {
+    data = await productSearch.searchProducts(params);
+  } catch (err) {
+    console.error("[Meili] search lỗi, dùng fallback:", err.message);
+    data = await productSearch.fallbackSearch(params);
+  }
+  return new OK({ message: "Tìm kiếm sản phẩm thành công", metadata: data }).send(res);
+}
 }
 
 module.exports = new ProductController();

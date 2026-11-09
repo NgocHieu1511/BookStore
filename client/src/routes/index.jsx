@@ -13,6 +13,7 @@ import Dashboard from "../pages/admin/DashBoard";
 import MyAccountLayout from "../pages/MyAccountLayout";
 import ProductCategory from "../pages/ProductCategory";
 import InfoUser from "../pages/InfoUser/InfoUser";
+import SearchPage from "../pages/SearchPage";
 
 const routes = [
   {
@@ -108,7 +109,9 @@ const routes = [
 {
   path: "/info-user",
   element: <InfoUser/>,
-}
+},
+{ path: "/search", 
+  element: <SearchPage /> },
 
 
 ];

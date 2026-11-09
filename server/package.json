@@ -4,7 +4,8 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "start": "nodemon src/server.js"
+    "start": "nodemon src/server.js",
+    "sync:search": "node src/scripts/syncMeili.js"
   },
   "keywords": [],
   "author": "",
@@ -21,6 +22,7 @@
     "express": "^5.2.1",
     "googleapis": "^173.0.0",
     "jsonwebtoken": "^9.0.3",
+    "meilisearch": "^0.62.0",
     "mongoose": "^9.7.1",
     "multer": "^2.2.0",
     "nodemailer": "^9.0.3",

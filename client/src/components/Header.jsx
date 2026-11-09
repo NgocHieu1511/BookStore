@@ -1,5 +1,5 @@
 import {
-  Search,
+
   ShoppingCart,
   UserRound,
   Bell,
@@ -14,6 +14,7 @@ import { useStore } from "../hooks/useStore";
 import { requestLogout } from "../config/userRequest";
 import { listCategory } from "../config/categoryRequest";
 import {  useParams } from "react-router-dom";
+import SearchBox from "./SearchBox";
 
 function Header() {
   const [active, setActive] = useState("Sách Trong Nước");
@@ -125,46 +126,9 @@ function Header() {
             </Link>
 
             {/* ================= SEARCH ================= */}
-            <div className="hidden md:flex flex-1 max-w-[650px]">
-              <div className="flex w-full">
-                <input
-                  type="text"
-                  placeholder="Tìm kiếm sách, văn phòng phẩm..."
-                  className="
-                    w-full
-                    h-11
-                    px-4
-                    bg-[#f2f4f5]
-                    border-2
-                    border-[#c92127]
-                    border-r-0
-                    rounded-l-lg
-                    outline-none
-                    text-[14px]
-                    text-gray-700
-                    placeholder:text-gray-500
-                    focus:ring-0
-                  "
-                />
-
-                <button
-                  className="
-                    w-16
-                    h-11
-                    flex
-                    items-center
-                    justify-center
-                    bg-[#c92127]
-                    text-white
-                    rounded-r-lg
-                    hover:bg-[#a30014]
-                    transition-colors
-                  "
-                >
-                  <Search size={22} strokeWidth={2.5} />
-                </button>
-              </div>
-            </div>
+           <div className="hidden md:flex flex-1 max-w-[650px]">
+  <SearchBox />
+</div>
 
             {/* ================= ACTIONS ================= */}
             <div className="flex items-center gap-4 md:gap-6 text-gray-700">
@@ -361,42 +325,7 @@ function Header() {
           </div>
 
           {/* ================= MOBILE SEARCH ================= */}
-          <div className="md:hidden mt-4">
-            <div className="flex w-full">
-              <input
-                type="text"
-                placeholder="Tìm kiếm sách, văn phòng phẩm..."
-                className="
-                  w-full
-                  h-10
-                  px-4
-                  bg-[#f2f4f5]
-                  border
-                  border-[#c92127]
-                  border-r-0
-                  rounded-l-lg
-                  outline-none
-                  text-[14px]
-                  focus:ring-0
-                "
-              />
-
-              <button
-                className="
-                  w-12
-                  h-10
-                  flex
-                  items-center
-                  justify-center
-                  bg-[#c92127]
-                  text-white
-                  rounded-r-lg
-                "
-              >
-                <Search size={20} />
-              </button>
-            </div>
-          </div>
+          <div className="md:hidden mt-4"><SearchBox mobile /></div>
         </div>
 
         {/* ================= NAVIGATION ================= */}

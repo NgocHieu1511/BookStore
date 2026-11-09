@@ -44,5 +44,6 @@ router.get(
   "/list/:idCategory",
   AsyncHandler(productController.getProductByCategory),
 );
+router.get("/search", AsyncHandler(productController.searchProduct));
 
 module.exports = router;
