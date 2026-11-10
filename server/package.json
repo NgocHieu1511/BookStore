@@ -12,6 +12,7 @@
   "license": "ISC",
   "type": "commonjs",
   "dependencies": {
+    "@google/genai": "^3.0.0",
     "axios": "^1.21.0",
     "bcrypt": "^6.0.0",
     "body-parser": "^2.3.0",
@@ -20,6 +21,7 @@
     "cors": "^2.8.6",
     "dotenv": "^17.4.2",
     "express": "^5.2.1",
+    "express-rate-limit": "^8.7.4",
     "googleapis": "^173.0.0",
     "jsonwebtoken": "^9.0.3",
     "meilisearch": "^0.62.0",
@@ -28,6 +30,7 @@
     "nodemailer": "^9.0.3",
     "otp-generator": "^4.0.1",
     "slugify": "^1.6.9",
+    "socket.io": "^4.8.4",
     "vnpay": "^2.5.0"
   },
   "devDependencies": {

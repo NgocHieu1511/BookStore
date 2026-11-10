@@ -1,16 +1,14 @@
 const express = require("express");
+const http = require("http");                               // THÊM
 const app = express();
 const port = 3000;
 const cookieParser = require("cookie-parser");
 const cors = require("cors");
 const connectDB = require("./config/connectDB");
+const { initSocket } = require("./config/socket");  
+const CLIENT_ORIGINS = ["http://localhost:5173", "http://127.0.0.1:5173"]; // THÊM         // THÊM
 app.use(cookieParser());
-app.use(
-  cors({
-    origin: ["http://localhost:5173", "http://127.0.0.1:5173"],
-    credentials: true,
-  }),
-);
+app.use(cors({ origin: CLIENT_ORIGINS, credentials: true })); // dùng lại biến
 const routes = require("./routes/index.routes");
 
 const { setupMeili } = require("./config/meiliSearch");
@@ -35,6 +33,9 @@ app.use((err, req, res, next) => {
   });
 });
 
-app.listen(port, () => {
+const server = http.createServer(app);                       // THÊM
+initSocket(server, CLIENT_ORIGINS);                          // THÊM
+
+server.listen(port, () => {                                  // ĐỔI app.listen -> server.listen
   console.log(`Example app listening on port ${port}`);
 });

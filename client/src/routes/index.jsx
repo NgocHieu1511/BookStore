@@ -7,13 +7,17 @@ import Checkout from "../pages/CheckOut";
 import PaymentSuccess from "../pages/PaymentSuccess";
 import OrderManagement from "../pages/admin/Components/Order/OrderManagement";
 import OrderDetailAdmin from "../pages/admin/Components/Order/OrderDetailAdmin";
-import MyOrders from "../pages/MyOrders";
+
 import OrderDetail from "../pages/OrderDetail";
 import Dashboard from "../pages/admin/DashBoard";
-import MyAccountLayout from "../pages/MyAccountLayout";
+
 import ProductCategory from "../pages/ProductCategory";
 import InfoUser from "../pages/InfoUser/InfoUser";
 import SearchPage from "../pages/SearchPage";
+import BlogsPage from "../pages/BlogsPage";
+import DetailBlog from "../pages/DetailBlog";
+import NotFoundPage from "../pages/NotFoundPage";
+
 
 const routes = [
   {
@@ -80,38 +84,28 @@ const routes = [
         element: <InfoUser />,
     },
 
-    {
-        path: '/favorite',
-        element: <InfoUser />,
-    },
-
-    {
-        path: '/address',
-        element: <InfoUser />,
-    },
+    {path: '/favorite',element: <InfoUser />,},
+    {path: '/address',element: <InfoUser />},
 
 
-{
-    path: "/account",
-    element: <MyAccountLayout />,
-    children: [
-        {
-            path: "my-orders",
-            element: <MyOrders />,
-        },
+// {
+//     path: "/account",
+//     element: <MyAccountLayout />,
+//     children: [
+//         {
+//             path: "my-orders",
+//             element: <MyOrders />,
+//         },
       
-    ],
-},
-{
-  path: "/category/:id",
-  element: <ProductCategory />,
-},
-{
-  path: "/info-user",
-  element: <InfoUser/>,
-},
-{ path: "/search", 
-  element: <SearchPage /> },
+//     ],
+// },
+{path: "/category/:id",element: <ProductCategory />,},
+{path: "/info-user",element: <InfoUser/>,},
+{ path: "/search", element: <SearchPage /> },
+{ path: "/blogs", element: <BlogsPage /> },
+{ path: "/blog/:id", element: <DetailBlog /> },
+{ path: "/notfound", element: <NotFoundPage /> },
+
 
 
 ];

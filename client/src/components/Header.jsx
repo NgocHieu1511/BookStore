@@ -28,7 +28,7 @@ function Header() {
  
 
  const menus = [
-  { label: "Bài viết", path: "/" },
+  { label: "Bài viết", path: "/blogs" },
   { label: "Liên hệ", path: "/" },
   { label: "Yêu thích", path: "/favorite" }, // đổi path cho đúng route của bạn
   { label: "Giới thiệu", path: "/" },

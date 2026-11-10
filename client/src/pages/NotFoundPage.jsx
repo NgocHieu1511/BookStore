@@ -2,7 +2,7 @@
 import Header from '../components/Header';
 import Button from '@mui/material/Button';
 
-import imgNotFound from '../../assets/img/notfound.png';
+import imgNotFound from '../assets/img/notfound.png';
 import { useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 

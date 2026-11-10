@@ -6,6 +6,8 @@ import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
 import routes from "./routes/index.jsx";
 import { Provider } from "./store/Provider.jsx";
 import { GoogleOAuthProvider } from "@react-oauth/google";
+import ChatWidget from "./components/ChatWidget.jsx";
+import AIChatbot from "./components/AIChatbot.jsx";
 const renderRoutes = (routeList) =>
   routeList.map((route) => (
     <Route key={route.path} path={route.path} element={route.element}>
@@ -19,6 +21,8 @@ createRoot(document.getElementById("root")).render(
         <Provider>
       <Router>
         <Routes>{renderRoutes(routes)}</Routes>
+         <ChatWidget />
+          <AIChatbot />
       </Router>
     </Provider>
        </GoogleOAuthProvider>
