@@ -6,7 +6,7 @@ const multer = require("multer");
 const path = require("path");
 
 const { AsyncHandler } = require("../auth/checkAuth");
-const { authUser } = require("../middleware/authUser");
+const { authUser, authAdmin } = require("../middleware/authUser");
 const { BadRequestError } = require("../core/error.response");
 
 const feedbackController = require("../controllers/feedback.controller");
@@ -58,5 +58,13 @@ router.post(
   AsyncHandler(feedbackController.createFeedback),
 );
 router.get("/my", authUser, AsyncHandler(feedbackController.getMyFeedbacks));
+// route (đặt TRƯỚC các route dạng "/:id" để không bị bắt nhầm)
+// API công khai cho trang chủ (không cần đăng nhập)
+router.get("/latest", AsyncHandler(feedbackController.getLatestFeedback));
+// ===== ADMIN =====
+router.get("/list", authAdmin, AsyncHandler(feedbackController.getAllFeedback));
+router.patch("/hide/:id", authAdmin, AsyncHandler(feedbackController.toggleHidden));
+router.post("/reply/:id", authAdmin, AsyncHandler(feedbackController.replyFeedback));
+router.delete("/delete/:id", authAdmin, AsyncHandler(feedbackController.deleteFeedback));
 
 module.exports = router;

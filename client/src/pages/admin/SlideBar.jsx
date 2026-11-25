@@ -1,15 +1,5 @@
 
-import {
-  House,
-  FileText,
-  MessageCircle,
-  ShoppingCart,
-  Layers,
-  Tag,
-  Users,
-  BookOpen,
-  Percent,
-} from "lucide-react";
+import { House, FileText, MessageCircle, ShoppingCart, Layers, Tag, Users, BookOpen, Percent, Star } from "lucide-react";
 
 function SlideBar({ setType, type }) {
   // Danh sách chức năng trong Sidebar
@@ -59,6 +49,7 @@ function SlideBar({ setType, type }) {
       title: "Bài Viết",
       icon: BookOpen,
     },
+        { id: 9, title: "Đánh Giá", icon: Star },
   ];
 
   // Xử lý khi chọn menu

@@ -1,7 +1,7 @@
 
 const modelBlogs = require('../models/blog.model');
 const cloudinary = require('../config/Cloudinary');
-
+const mongoose = require('mongoose');
 // Upload ảnh trực tiếp lên Cloudinary bằng buffer
 const uploadImage = (buffer) => {
     return new Promise((resolve, reject) => {
@@ -72,25 +72,23 @@ class BlogsController {
     }
 
     // Lấy danh sách bài viết
-    async getAllBlogs(req, res) {
-        try {
-            const blogs = await modelBlogs.find().sort({
-                createdAt: -1
-            });
+  async getAllBlogs(req, res) {
+    try {
+        const limit = Math.min(Number(req.query.limit) || 0, 50);
 
-            return res.status(200).json({
-                message: 'Lấy danh sách Blog thành công',
-                metadata: blogs,
-            });
+        let query = modelBlogs.find().sort({ createdAt: -1 });
+        if (limit) query = query.limit(limit);
+        const blogs = await query;
 
-        } catch (error) {
-            console.error('Lỗi lấy danh sách Blog:', error);
-
-            return res.status(500).json({
-                message: 'Lỗi server'
-            });
-        }
+        return res.status(200).json({
+            message: 'Lấy danh sách Blog thành công',
+            metadata: blogs,
+        });
+    } catch (error) {
+        console.error('Lỗi lấy danh sách Blog:', error);
+        return res.status(500).json({ message: 'Lỗi server' });
     }
+}
 
     // Lấy chi tiết bài viết
     async getOneBlog(req, res) {
@@ -165,6 +163,61 @@ class BlogsController {
             });
         }
     }
+    // Cập nhật bài viết
+async updateBlog(req, res) {
+    const { idBlog } = req.query;
+    const { nameBlog, content } = req.body;
+
+    if (!idBlog || !mongoose.isValidObjectId(idBlog)) {
+        return res.status(400).json({ message: 'ID bài viết không hợp lệ' });
+    }
+
+    if (!nameBlog?.trim() || !content?.trim()) {
+        return res.status(400).json({ message: 'Vui lòng nhập đầy đủ thông tin' });
+    }
+
+    let uploadedImage;
+
+    try {
+        const blog = await modelBlogs.findById(idBlog);
+
+        if (!blog) {
+            return res.status(404).json({ message: 'Bài viết không tồn tại' });
+        }
+
+        const oldPublicId = blog.publicId;
+
+        blog.nameBlog = nameBlog.trim();
+        blog.content = content;
+
+        // Chỉ upload ảnh mới khi admin có chọn ảnh
+        if (req.file) {
+            uploadedImage = await uploadImage(req.file.buffer);
+            blog.image = uploadedImage.secure_url;
+            blog.publicId = uploadedImage.public_id;
+        }
+
+        await blog.save();
+
+        // Lưu DB thành công mới xóa ảnh cũ trên Cloudinary
+        if (uploadedImage && oldPublicId) {
+            await cloudinary.uploader.destroy(oldPublicId).catch(console.error);
+        }
+
+        return res.status(200).json({
+            message: 'Cập nhật bài viết thành công',
+            metadata: blog,
+        });
+    } catch (error) {
+        // Upload ảnh mới xong mà lưu DB lỗi thì xóa ảnh mới để khỏi thừa
+        if (uploadedImage?.public_id) {
+            await cloudinary.uploader.destroy(uploadedImage.public_id).catch(console.error);
+        }
+
+        console.error('Lỗi cập nhật Blog:', error);
+        return res.status(500).json({ message: 'Lỗi server khi cập nhật bài viết' });
+    }
+}
 }
 
 module.exports = new BlogsController();

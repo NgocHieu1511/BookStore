@@ -285,14 +285,14 @@ function AddProduct({ dataOneProduct, setTypeBack, setDataOneProduct }) {
                             fullWidth
                         />
 
-                        <TextField
+                        {/* <TextField
                             label="Giảm giá (%) *"
                             variant="outlined"
                             type="number"
                             onChange={(e) => setDiscount(e.target.value)}
                             value={discount}
                             fullWidth
-                        />
+                        /> */}
 
                         <TextField
                             label="Số lượng sản phẩm *"

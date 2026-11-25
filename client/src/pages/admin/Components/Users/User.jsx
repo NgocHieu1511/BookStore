@@ -1,5 +1,6 @@
 
 import { useEffect, useState } from 'react';
+import { useSearchParams } from 'react-router-dom'; 
 import {
     Alert,
     Button,
@@ -15,6 +16,7 @@ import {
 } from '@mui/material';
 
 import { requestGetAllUser } from '../../../../config/userRequest';
+import PaginationPage from '../../../../components/Pagination/Pagination';
 
 function ControllerUser() {
     // Danh sách người dùng
@@ -28,13 +30,18 @@ function ControllerUser() {
 
     // Lấy danh sách người dùng từ backend
     const [total, setTotal] = useState(0);
+    const LIMIT = 10; // số người dùng mỗi trang
+
+const [totalPages, setTotalPages] = useState(1);
+const [searchParams] = useSearchParams();
+const page = Number(searchParams.get('page')) || 1;
 
 const fetchData = async () => {
     try {
         setLoading(true);
         setError('');
 
-        const res = await requestGetAllUser({ page: 1, limit: 100 });
+        const res = await requestGetAllUser({ page, limit: LIMIT });
 
         const users = Array.isArray(res?.metadata?.users)
             ? res.metadata.users
@@ -42,11 +49,11 @@ const fetchData = async () => {
 
         setDataUser(users);
         setTotal(res?.metadata?.pagination?.total ?? users.length);
+        setTotalPages(res?.metadata?.pagination?.totalPages || 1);
     } catch (err) {
         console.error('Lỗi lấy danh sách người dùng:', err);
         setError(
-            err.response?.data?.message ||
-                'Không thể tải danh sách người dùng.',
+            err.response?.data?.message || 'Không thể tải danh sách người dùng.',
         );
     } finally {
         setLoading(false);
@@ -54,10 +61,11 @@ const fetchData = async () => {
 };
 
     // Tải danh sách khi component được mở
-    useEffect(() => {
-        document.title = 'Quản lý người dùng';
-        fetchData();
-    }, []);
+   useEffect(() => {
+    document.title = 'Quản lý người dùng';
+    fetchData();
+    window.scrollTo({ top: 0, behavior: 'smooth' }); // tuỳ chọn
+}, [page]);
 
     // Định dạng ngày đăng ký
     const formatDate = (date) => {
@@ -112,7 +120,7 @@ const fetchData = async () => {
 
                 <div className="rounded-xl border border-gray-200 bg-white p-4 shadow-sm">
                     <p className="text-sm text-gray-500">
-                        Số tài khoản Admin
+                        Admin trong trang này
                     </p>
 
                     <p className="mt-2 text-2xl font-bold text-blue-600">
@@ -218,9 +226,7 @@ const fetchData = async () => {
                                                     },
                                             }}
                                         >
-                                            <TableCell>
-                                                {index + 1}
-                                            </TableCell>
+                                           <TableCell>{(page - 1) * LIMIT + index + 1}</TableCell>
 
                                             <TableCell>
                                                 <span className="font-medium text-gray-800">
@@ -289,6 +295,10 @@ const fetchData = async () => {
                             </TableBody>
                         </Table>
                     </TableContainer>
+                )}
+
+                {!loading && totalPages > 1 && (
+                    <PaginationPage totalPages={totalPages} />
                 )}
             </div>
         </div>

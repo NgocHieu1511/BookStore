@@ -38,3 +38,40 @@ export const searchProducts = async (params, signal) => {
   const res = await request.get(`${apiProduct}/search`, { params, signal });
   return res.data; // dữ liệu nằm ở res.data.metadata
 };
+export const getBestSeller = async (categoryId) => {
+  const res = await request.get(`${apiProduct}/best-seller`, {
+    params: { category: categoryId || undefined, limit: 5 },
+  });
+  return res.data;
+};
+// Xóa nhiều sản phẩm (ids: mảng _id)
+export const deleteManyProducts = async (ids) => {
+  const res = await request.post(`${apiProduct}/delete-many`, { ids });
+  return res.data;
+};
+export const exportProducts = async (format) => {
+  const res = await request.get(`${apiProduct}/export`, {
+    params: { format },
+    responseType: "blob",
+  });
+  return res.data;
+};
+
+export const downloadImportTemplate = async (format) => {
+  const res = await request.get(`${apiProduct}/import-template`, {
+    params: { format },
+    responseType: "blob",
+  });
+  return res.data;
+};
+
+export const importProducts = async (file) => {
+  const formData = new FormData();
+  formData.append("file", file);
+  const res = await request.post(`${apiProduct}/import`, formData, { timeout: 120000 });
+  return res.data;
+};
+export const listProductsAdmin = async (params) => {
+  const res = await request.get(`${apiProduct}/admin/list`, { params });
+  return res.data;
+};

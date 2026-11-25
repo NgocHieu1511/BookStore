@@ -1,10 +1,11 @@
 import { useState } from 'react';
-import OrderProcessing from './Components/OrderProcessing';
+import OrderProcessing from './Components/orderProcessing';
 import { ToastContainer } from 'react-toastify';
 
 const listHeader = [
     { name: 'Đang xử lý', params: 'pending' },
     { name: 'Đã xác nhận', params: 'confirmed' },
+      { name: 'Đang giao', params: 'shipping' },
     { name: 'Đã giao', params: 'delivered' },
     { name: 'Hoàn thành', params: 'completed' },
     { name: 'Đã huỷ', params: 'cancelled' },

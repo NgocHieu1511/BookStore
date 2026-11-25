@@ -1,13 +1,15 @@
 const mongoose = require("mongoose");
 const productModel = require("../models/product.model");
 const { client, PRODUCT_INDEX } = require("../config/meiliSearch");
+const { getEffectiveDiscount } = require("../utils/price");
 require("../models/category.model"); 
 const index = () => client.index(PRODUCT_INDEX);
 
 // Chuyển document Mongo thành document để index
 const toDocument = (p) => {
   const meta = p.metadata || {};
-  const discount = p.discountProduct || 0;
+  // const discount = p.discountProduct || 0;
+  const discount = getEffectiveDiscount(p);   // thay cho: p.discountProduct || 0
   return {
     _id: String(p._id),
     nameProduct: p.nameProduct,

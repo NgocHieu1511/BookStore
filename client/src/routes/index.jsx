@@ -17,6 +17,7 @@ import SearchPage from "../pages/SearchPage";
 import BlogsPage from "../pages/BlogsPage";
 import DetailBlog from "../pages/DetailBlog";
 import NotFoundPage from "../pages/NotFoundPage";
+import AdminRoute from "../components/AdminRoute";
 
 
 const routes = [
@@ -56,19 +57,16 @@ const routes = [
   path: "/admin/orders/:orderId",
   element: <OrderDetailAdmin />,
 },
-// {
-//   path: "/account/my-orders",
-//   element: <MyOrders />,
-// },
+
  // KHÁCH HÀNG: CHI TIẾT ĐƠN HÀNG
   {
     path: "/order/:orderId",
     element: <OrderDetail />,
   },
-  {
-    path: "/admin",
-    element: <Dashboard />,
-  },
+ {
+  path: "/admin",
+  element: <AdminRoute><Dashboard /></AdminRoute>,
+},
   {
         path: '/customer',
         element: <InfoUser />,
@@ -86,19 +84,6 @@ const routes = [
 
     {path: '/favorite',element: <InfoUser />,},
     {path: '/address',element: <InfoUser />},
-
-
-// {
-//     path: "/account",
-//     element: <MyAccountLayout />,
-//     children: [
-//         {
-//             path: "my-orders",
-//             element: <MyOrders />,
-//         },
-      
-//     ],
-// },
 {path: "/category/:id",element: <ProductCategory />,},
 {path: "/info-user",element: <InfoUser/>,},
 { path: "/search", element: <SearchPage /> },

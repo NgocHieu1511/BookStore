@@ -62,6 +62,7 @@ const paymentModel = new Schema(
       enum: [
         "pending",
         "confirmed",
+        "shipping",
         "delivered",
         "completed",
         "cancelled",
@@ -83,6 +84,7 @@ const paymentModel = new Schema(
           enum: [
             "pending",
             "confirmed",
+            "shipping",
             "delivered",
             "completed",
             "cancelled",

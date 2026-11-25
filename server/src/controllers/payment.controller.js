@@ -326,7 +326,7 @@ async updatePayment(req, res) {
   const allowedStatuses = [
     "pending",
     "confirmed",
-    
+    "shipping",
     "delivered",
     "completed",
     "cancelled",
@@ -512,6 +512,7 @@ async getMyPayments(req, res) {
   const allowedStatuses = [
     "pending",
     "confirmed",
+    "shipping",
     "delivered",
     "completed",
     "cancelled",

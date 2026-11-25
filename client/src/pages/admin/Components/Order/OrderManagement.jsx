@@ -23,6 +23,7 @@ import {
 const STATUS_OPTIONS = [
   { value: "pending", label: "Chờ xác nhận" },
   { value: "confirmed", label: "Đã xác nhận" },
+   { value: "shipping", label: "Đang giao hàng" },
   { value: "delivered", label: "Đã giao hàng" },
   { value: "completed", label: "Hoàn thành" },
   { value: "cancelled", label: "Đã hủy" },
@@ -31,6 +32,7 @@ const STATUS_OPTIONS = [
 const STATUS_COLORS = {
   pending: "gold",
   confirmed: "blue",
+  shipping: "purple",
   delivered: "cyan",
   completed: "green",
   cancelled: "red",

@@ -6,28 +6,31 @@ import TextField from '@mui/material/TextField';
 import CloudUploadIcon from '@mui/icons-material/CloudUpload';
 import Button from '@mui/material/Button';
 
-import useAutoSave from '../../../../../../hooks/useAutoSave';
-import { requestCreateBlog } from '../../../../../../config/blogRequest';
+// import useAutoSave from '../../../../../../hooks/useAutoSave';
+import { requestCreateBlog,
+    requestUpdateBlog } from '../../../../../../config/blogRequest';
 
 import { toast } from 'react-toastify';
 
-function AddBlog() {
-    const [valueText, setValueText] = useState('');
-    const [nameBlog, setNameBlog] = useState('');
+function AddBlog( blog = null, onSuccess ) {
+     const isEdit = Boolean(blog);
+ const [valueText, setValueText] = useState(blog?.content || '');
+    const [nameBlog, setNameBlog] = useState(blog?.nameBlog || '');
     const [img, setImg] = useState(null);
-    const [previewImg, setPreviewImg] = useState(null);
+    const [previewImg, setPreviewImg] = useState(blog?.image || null);
 
     // Tự động lưu nội dung sau 1 giây
-    const savedData = useAutoSave(valueText, 1000);
+    // const savedData = useAutoSave(valueText, 1000);
+    
 
     // Giải phóng URL ảnh preview khi thay ảnh hoặc unmount
     useEffect(() => {
-        return () => {
-            if (previewImg) {
-                URL.revokeObjectURL(previewImg);
-            }
-        };
-    }, [previewImg]);
+    return () => {
+        if (previewImg?.startsWith('blob:')) {
+            URL.revokeObjectURL(previewImg);
+        }
+    };
+}, [previewImg]);
 
     const handleEditorChange = (newText) => {
         setValueText(newText);
@@ -48,45 +51,52 @@ function AddBlog() {
         setPreviewImg(URL.createObjectURL(file));
     };
 
-    // Tạo bài viết
-    const handleCreateBlog = async () => {
-        try {
-            if (!nameBlog.trim()) {
-                toast.warning('Vui lòng nhập tiêu đề bài viết!');
-                return;
-            }
+    const handleSubmit = async () => {
+    try {
+        if (!nameBlog.trim()) {
+            toast.warning('Vui lòng nhập tiêu đề bài viết!');
+            return;
+        }
 
-            if (!img) {
-                toast.warning('Vui lòng chọn ảnh bài viết!');
-                return;
-            }
+        // Thêm mới thì bắt buộc có ảnh, sửa thì không (giữ ảnh cũ)
+        if (!isEdit && !img) {
+            toast.warning('Vui lòng chọn ảnh bài viết!');
+            return;
+        }
 
-            if (!savedData || savedData === '<p></p>') {
-                toast.warning('Vui lòng nhập nội dung bài viết!');
-                return;
-            }
+        if (!valueText || valueText === '<p></p>') {
+            toast.warning('Vui lòng nhập nội dung bài viết!');
+            return;
+        }
 
-            const formData = new FormData();
+        const formData = new FormData();
+        formData.append('content', valueText);
+        formData.append('nameBlog', nameBlog.trim());
+        if (img) formData.append('image', img);
 
-            formData.append('content', valueText);
-            formData.append('nameBlog', nameBlog.trim());
-            formData.append('image', img);
+        const res = isEdit
+            ? await requestUpdateBlog(blog._id, formData)
+            : await requestCreateBlog(formData);
 
-            const res = await requestCreateBlog(formData);
+        toast.success(
+            res.message || (isEdit ? 'Cập nhật thành công!' : 'Tạo bài viết thành công!'),
+        );
 
-            toast.success(res.message || 'Tạo bài viết thành công!');
-
+        if (!isEdit) {
             setValueText('');
             setNameBlog('');
             setImg(null);
             setPreviewImg(null);
-        } catch (error) {
-            toast.error(
-                error?.response?.data?.message ||
-                'Có lỗi xảy ra khi tạo bài viết!'
-            );
         }
-    };
+
+        onSuccess?.();
+    } catch (error) {
+        toast.error(
+            error?.response?.data?.message ||
+                (isEdit ? 'Cập nhật bài viết thất bại!' : 'Có lỗi xảy ra khi tạo bài viết!'),
+        );
+    }
+};
 
     return (
         <div className="min-h-screen bg-gray-50 p-4 md:p-6">
@@ -96,13 +106,14 @@ function AddBlog() {
 
                 {/* HEADER */}
                 <div className="mb-6">
-                    <h1 className="text-2xl font-bold text-gray-800">
-                        Thêm bài viết
-                    </h1>
-
-                    <p className="mt-1 text-sm text-gray-500">
-                        Tạo nội dung bài viết mới cho Bookstore.com
-                    </p>
+                   <h1 className="text-2xl font-bold text-gray-800">
+    {isEdit ? 'Sửa bài viết' : 'Thêm bài viết'}
+</h1>
+<p className="mt-1 text-sm text-gray-500">
+    {isEdit
+        ? 'Chỉnh sửa nội dung bài viết trên Bookstore.com'
+        : 'Tạo nội dung bài viết mới cho Bookstore.com'}
+</p>
                 </div>
 
                 {/* MAIN CONTENT */}
@@ -167,8 +178,8 @@ function AddBlog() {
                                 </Button>
 
                                 <p className="mt-2 text-xs text-gray-400">
-                                    Chỉ chọn một hình ảnh
-                                </p>
+    {isEdit ? 'Không chọn ảnh mới thì giữ nguyên ảnh cũ' : 'Chỉ chọn một hình ảnh'}
+</p>
                             </div>
                         </div>
 
@@ -255,7 +266,7 @@ function AddBlog() {
                 <div className="mt-6 flex justify-end">
 
                     <Button
-                        onClick={handleCreateBlog}
+                        onClick={handleSubmit}
                         fullWidth
                         variant="contained"
                         sx={{
@@ -272,7 +283,7 @@ function AddBlog() {
                             },
                         }}
                     >
-                        Lưu bài viết
+                        {isEdit ? 'Lưu thay đổi' : 'Lưu bài viết'}
                     </Button>
 
                 </div>

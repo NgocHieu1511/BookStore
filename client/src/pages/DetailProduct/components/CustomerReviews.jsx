@@ -193,6 +193,11 @@ function CustomerReviews({ reviews = [] }) {
                   <p className="mt-3 text-sm leading-6 text-gray-700">
                     {review.content || "Không có nội dung đánh giá"}
                   </p>
+                  {review.adminReply && (
+  <p className="mt-2 rounded bg-gray-50 p-2 text-sm text-gray-700">
+    <b>Phản hồi từ BookStore:</b> {review.adminReply.content}
+  </p>
+)}
                 </div>
               </div>
             </div>

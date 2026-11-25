@@ -2,7 +2,8 @@
 import { useState, useEffect } from 'react';
 import { useSearchParams } from 'react-router-dom';
 
-import { listProducts } from '../../../../config/productRequest';
+import { listProductsAdmin } from '../../../../config/productRequest';
+import ProductFilter from './ProductFilter';
 
 import Table from '@mui/material/Table';
 import TableBody from '@mui/material/TableBody';
@@ -12,10 +13,13 @@ import TableHead from '@mui/material/TableHead';
 import TableRow from '@mui/material/TableRow';
 import Paper from '@mui/material/Paper';
 import Button from '@mui/material/Button';
+import Checkbox from '@mui/material/Checkbox';
 
 import AddProduct from './AddProduct/AddProduct';
 import ModalDeleteProduct from './ModalDelete/ModalDelete';
+import ModalDeleteManyProduct from './ModalDeleteMany/ModalDeleteMany';
 import PaginationPage from '../../../../components/Pagination/Pagination';
+import ImportExport from './ImportExport';
 
 function HomeProducts() {
     const [dataProducts, setDataProducts] = useState([]);
@@ -24,34 +28,25 @@ function HomeProducts() {
     const [dataOneProduct, setDataOneProduct] = useState({});
     const [searchParams] = useSearchParams();
     const [type, setType] = useState(0);
+    const [selectedIds, setSelectedIds] = useState([]); // id các sản phẩm được tick
+    const [openMany, setOpenMany] = useState(false); // modal xóa nhiều
 
     // Lấy danh sách sản phẩm từ API
-    const fetchData = async () => {
-        try {
-            const params = {
-                sortType: '',
-                category: '',
-                limit: 10,
-                page: searchParams.get('page') || 1,
-            };
-              console.log('PARAMS:', params);
+ const fetchData = async () => {
+    try {
+        // Toàn bộ bộ lọc + page đang nằm trên URL, gửi thẳng lên server
+        const params = Object.fromEntries(
+            [...searchParams.entries()].filter(([, value]) => value !== ''),
+        );
+        const res = await listProductsAdmin({ ...params, limit: 10 });
 
-            const res = await listProducts(params);
-             console.log('API RESPONSE:', res);
-        console.log('API DATA:', res?.metadata);
-
-           
-
-            setDataProducts(
-                Array.isArray(res?.metadata) ? res.metadata : [],
-            );
-
-            setPageProduct(Number(res?.totalPages) || 1);
-        } catch (error) {
-            console.error('Lỗi lấy danh sách sản phẩm:', error);
-            setDataProducts([]);
-        }
-    };
+        setDataProducts(res?.metadata?.products || []);
+        setPageProduct(res?.metadata?.pagination?.totalPages || 1);
+    } catch (error) {
+        console.error('Lỗi lấy danh sách sản phẩm:', error);
+        setDataProducts([]);
+    }
+};
 
     useEffect(() => {
         document.title = 'Quản lý sản phẩm';
@@ -84,6 +79,24 @@ function HomeProducts() {
         originalProduct: product,
     }));
 
+    // ===== Chọn bằng checkbox =====
+    const allChecked = rows.length > 0 && selectedIds.length === rows.length;
+    const someChecked = selectedIds.length > 0 && !allChecked;
+
+    const handleToggleOne = (id) => {
+        setSelectedIds((prev) =>
+            prev.includes(id) ? prev.filter((x) => x !== id) : [...prev, id],
+        );
+    };
+
+    const handleToggleAll = (checked) => {
+        setSelectedIds(checked ? rows.map((row) => row.id) : []);
+    };
+
+    const selectedProducts = rows
+        .filter((row) => selectedIds.includes(row.id))
+        .map((row) => ({ id: row.id, name: row.name }));
+
     return (
         <div className="min-h-screen w-full bg-gray-50 p-4 md:p-6">
             {/* Tiêu đề */}
@@ -91,6 +104,7 @@ function HomeProducts() {
                 <h1 className="text-xl font-semibold text-gray-800">
                     Quản lý sản phẩm
                 </h1>
+                <ImportExport onImported={fetchData} />
 
                 <Button
                     variant="contained"
@@ -104,17 +118,65 @@ function HomeProducts() {
                         }
                     }}
                 >
+
                     {type === 0 ? 'Thêm sản phẩm' : 'Quay lại'}
                 </Button>
             </div>
 
             {/* Danh sách hoặc form thêm/sửa */}
+            {/* Bộ lọc */}
+            {type === 0 && <ProductFilter />}
             {type === 0 ? (
                 <div className="overflow-hidden rounded-xl bg-white shadow-sm">
+                    {/* Thanh thao tác khi có sản phẩm được chọn */}
+                    {selectedIds.length > 0 && (
+                        <div className="flex flex-wrap items-center justify-between gap-3 border-b border-red-100 bg-red-50 px-4 py-3">
+                            <span className="text-sm text-gray-700">
+                                Đã chọn{' '}
+                                <b className="text-red-600">
+                                    {selectedIds.length}
+                                </b>{' '}
+                                sản phẩm
+                            </span>
+
+                            <div className="flex gap-2">
+                                <Button
+                                    size="small"
+                                    color="inherit"
+                                    onClick={() => setSelectedIds([])}
+                                >
+                                    Bỏ chọn
+                                </Button>
+                                <Button
+                                    size="small"
+                                    variant="contained"
+                                    color="error"
+                                    onClick={() => setOpenMany(true)}
+                                >
+                                    Xóa đã chọn ({selectedIds.length})
+                                </Button>
+                            </div>
+                        </div>
+                    )}
+
                     <TableContainer component={Paper} elevation={0}>
                         <Table sx={{ minWidth: 900 }} aria-label="Danh sách sản phẩm">
                             <TableHead>
                                 <TableRow>
+                                    <TableCell padding="checkbox">
+                                        <Checkbox
+                                            checked={allChecked}
+                                            indeterminate={someChecked}
+                                            onChange={(e) =>
+                                                handleToggleAll(e.target.checked)
+                                            }
+                                            disabled={rows.length === 0}
+                                            inputProps={{
+                                                'aria-label': 'Chọn tất cả sản phẩm',
+                                            }}
+                                        />
+                                    </TableCell>
+
                                     <TableCell>Ảnh</TableCell>
 
                                     <TableCell align="center">
@@ -153,7 +215,23 @@ function HomeProducts() {
                                         <TableRow
                                             key={row.id}
                                             hover
+                                            selected={selectedIds.includes(row.id)}
                                         >
+                                            {/* Checkbox chọn */}
+                                            <TableCell padding="checkbox">
+                                                <Checkbox
+                                                    checked={selectedIds.includes(
+                                                        row.id,
+                                                    )}
+                                                    onChange={() =>
+                                                        handleToggleOne(row.id)
+                                                    }
+                                                    inputProps={{
+                                                        'aria-label': `Chọn ${row.name}`,
+                                                    }}
+                                                />
+                                            </TableCell>
+
                                             {/* Ảnh sản phẩm */}
                                             <TableCell>
                                                 {row.img ? (
@@ -253,7 +331,7 @@ function HomeProducts() {
                                     ))
                                 ) : (
                                     <TableRow>
-                                        <TableCell colSpan={8} align="center">
+                                        <TableCell colSpan={9} align="center">
                                             <div className="py-10 text-gray-500">
                                                 Không có sản phẩm
                                             </div>
@@ -277,6 +355,17 @@ function HomeProducts() {
                 open={open}
                 setOpen={setOpen}
                 dataOneProduct={dataOneProduct}
+            />
+
+            {/* Modal xóa nhiều */}
+            <ModalDeleteManyProduct
+                open={openMany}
+                setOpen={setOpenMany}
+                selectedProducts={selectedProducts}
+                onSuccess={() => {
+                    setSelectedIds([]);
+                    fetchData();
+                }}
             />
 
             {/* Phân trang */}

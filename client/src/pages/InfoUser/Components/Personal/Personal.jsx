@@ -1,7 +1,7 @@
 
 import TextField from '@mui/material/TextField';
 import Button from '@mui/material/Button';
-
+import { message,Modal, Form, Input } from "antd";
 import {
     Camera,
     Lock,
@@ -12,7 +12,7 @@ import {
 
 import { useStore } from '../../../../hooks/useStore';
 import { useEffect, useState } from 'react';
-import { requestEditUser } from '../../../../config/userRequest';
+import { requestEditUser, requestChangePassword } from '../../../../config/userRequest';
 import { toast, ToastContainer } from 'react-toastify';
 
 function Personal() {
@@ -26,6 +26,9 @@ function Personal() {
     const [previewImage, setPreviewImage] = useState(null);
     const [image, setImage] = useState(null);
     const [loading, setLoading] = useState(false);
+    const [openPwModal, setOpenPwModal] = useState(false);
+const [pwLoading, setPwLoading] = useState(false);
+const [pwForm] = Form.useForm();
 
     // Lấy thông tin người dùng
 useEffect(() => {
@@ -35,6 +38,28 @@ useEffect(() => {
         setEmail(user.email || '');
     }
 }, [dataUser]);
+const handleClosePwModal = () => {
+    setOpenPwModal(false);
+    pwForm.resetFields();
+};
+
+const handleChangePassword = async (values) => {
+    setPwLoading(true);
+    try {
+        const res = await requestChangePassword({
+            oldPassword: values.oldPassword,
+            newPassword: values.newPassword,
+        });
+        toast.success(res.message || 'Đổi mật khẩu thành công');
+        handleClosePwModal();
+    } catch (error) {
+        toast.error(
+            error.response?.data?.message || 'Đổi mật khẩu thất bại!'
+        );
+    } finally {
+        setPwLoading(false);
+    }
+};
 
     // Xem trước ảnh đại diện
     const handlePreviewImage = (e) => {
@@ -57,6 +82,7 @@ useEffect(() => {
 
         fileReader.readAsDataURL(file);
     };
+    
 
     // Cập nhật thông tin người dùng
     const handleEditUser = async () => {
@@ -99,6 +125,7 @@ useEffect(() => {
         setLoading(false);
     }
 };
+
 
     if (!user) {
         return (
@@ -204,12 +231,18 @@ useEffect(() => {
                                     </p>
                                 </div>
 
-                                <Button variant="outlined" size="small">
-                                    Cập nhật
-                                </Button>
-                            </div>
+                               <Button
+    variant="outlined"
+    size="small"
+    onClick={() => setOpenPwModal(true)}
+    disabled={user?.typeLogin === 'google'}
+>
+    Cập nhật
+</Button>
 
-                            <div className="flex items-center justify-between gap-3">
+                        </div>
+
+                            {/* <div className="flex items-center justify-between gap-3">
                                 <div className="flex items-center gap-3">
                                     <Trash2 size={16} className="text-gray-500" />
 
@@ -221,7 +254,7 @@ useEffect(() => {
                                 <Button variant="outlined" size="small">
                                     Yêu cầu
                                 </Button>
-                            </div>
+                            </div> */}
                         </div>
                     </div>
 
@@ -273,7 +306,77 @@ useEffect(() => {
                     </div>
                 </div>
             </div>
+        <Modal
+    title="Đổi mật khẩu"
+    open={openPwModal}
+    onCancel={handleClosePwModal}
+    onOk={() => pwForm.submit()}
+    okText="Đổi mật khẩu"
+    cancelText="Hủy"
+    confirmLoading={pwLoading}
+    okButtonProps={{ style: { backgroundColor: '#c92127' } }}
+    maskClosable={false}
+>
+    <Form
+        form={pwForm}
+        layout="vertical"
+        onFinish={handleChangePassword}
+        autoComplete="off"
+        className="mt-4"
+    >
+        <Form.Item
+            label="Mật khẩu hiện tại"
+            name="oldPassword"
+            rules={[{ required: true, message: 'Vui lòng nhập mật khẩu hiện tại' }]}
+        >
+            <Input.Password placeholder="Nhập mật khẩu hiện tại" autoComplete="current-password" />
+        </Form.Item>
+
+        <Form.Item
+            label="Mật khẩu mới"
+            name="newPassword"
+            dependencies={['oldPassword']}
+            rules={[
+                { required: true, message: 'Vui lòng nhập mật khẩu mới' },
+                { min: 6, message: 'Mật khẩu phải có ít nhất 6 ký tự' },
+                { max: 50, message: 'Mật khẩu tối đa 50 ký tự' },
+                ({ getFieldValue }) => ({
+                    validator(_, value) {
+                        if (!value || getFieldValue('oldPassword') !== value) {
+                            return Promise.resolve();
+                        }
+                        return Promise.reject(
+                            new Error('Mật khẩu mới phải khác mật khẩu hiện tại')
+                        );
+                    },
+                }),
+            ]}
+        >
+            <Input.Password placeholder="Nhập mật khẩu mới" autoComplete="new-password" />
+        </Form.Item>
+
+        <Form.Item
+            label="Xác nhận mật khẩu mới"
+            name="confirmPassword"
+            dependencies={['newPassword']}
+            rules={[
+                { required: true, message: 'Vui lòng xác nhận mật khẩu mới' },
+                ({ getFieldValue }) => ({
+                    validator(_, value) {
+                        if (!value || getFieldValue('newPassword') === value) {
+                            return Promise.resolve();
+                        }
+                        return Promise.reject(new Error('Mật khẩu xác nhận không khớp'));
+                    },
+                }),
+            ]}
+        >
+            <Input.Password placeholder="Nhập lại mật khẩu mới" autoComplete="new-password" />
+        </Form.Item>
+    </Form>
+</Modal>
         </div>
+        
     );
 }
 

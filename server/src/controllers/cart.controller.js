@@ -4,6 +4,7 @@ const { Created, OK } = require("../core/success.response");
 const cartModel = require("../models/cart.model");
 const productModel = require("../models/product.model");
 const couponModel = require("../models/coupon.model");
+const { getFinalPrice } = require("../utils/price");
 
 async function calculateTotalPrice(findCartUser) {
   const allProductIds = findCartUser.products.map((p) => p.productId);
@@ -17,10 +18,11 @@ async function calculateTotalPrice(findCartUser) {
       (prod) => prod._id.toString() === p.productId.toString(),
     );
     if (product) {
-      const priceAfterDiscount =
-        product.priceProduct -
-        (product.priceProduct * product.discountProduct) / 100;
-      totalPrice += priceAfterDiscount * p.quantity;
+      // const priceAfterDiscount =
+      //   product.priceProduct -
+      //   (product.priceProduct * product.discountProduct) / 100;
+      // totalPrice += priceAfterDiscount * p.quantity;
+      totalPrice += getFinalPrice(product) * p.quantity; 
     }
   });
 

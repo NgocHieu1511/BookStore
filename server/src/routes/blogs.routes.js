@@ -40,5 +40,7 @@ router.get('/get-one-blog', controllerBlogs.getOneBlog);
 
 // Xóa bài viết
 router.delete('/delete', authAdmin, controllerBlogs.deleteBlog);
+// Cập nhật bài viết (ảnh là tuỳ chọn)
+router.put('/update',authAdmin,upload.single('image'),controllerBlogs.updateBlog);
 
 module.exports = router;

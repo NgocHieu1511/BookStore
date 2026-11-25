@@ -14,11 +14,8 @@ export const requestCreateBlog = async (data) => {
 };
 
 // Lấy danh sách bài viết
-export const requestGetBlogs = async () => {
-    const res = await request.get(
-        `${apiBlog}/list`
-    );
-
+export const requestGetBlogs = async (params) => {
+    const res = await request.get(`${apiBlog}/list`, { params });
     return res.data;
 };
 
@@ -42,6 +39,16 @@ export const requestDeleteBlog = async (idBlog) => {
             }
         }
     );
+
+
+    return res.data;
+
+};
+// Cập nhật bài viết
+export const requestUpdateBlog = async (idBlog, data) => {
+    const res = await request.put(`${apiBlog}/update`, data, {
+        params: { idBlog },
+    });
 
     return res.data;
 };

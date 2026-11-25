@@ -15,6 +15,14 @@ export const requestAuth = async () => {
     return res.data;
     
 };
+// Đổi mật khẩu (cần đăng nhập)
+export const requestChangePassword = async ({ oldPassword, newPassword }) => {
+    const res = await apiClient.post(`${apiUser}/change-password`, {
+        oldPassword,
+        newPassword,
+    });
+    return res.data;
+};
 export const requestLogout = async () => {
     const res = await apiClient.get(`${apiUser}/logout`);
     return res.data;

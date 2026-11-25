@@ -5,7 +5,8 @@ const roundOneDecimal = (value) => Math.round(Number(value || 0) * 10) / 10;
 // Điểm TB + số lượt đánh giá cho NHIỀU sản phẩm bằng 1 query
 async function getRatingMap(productIds) {
   const stats = await feedbackModel.aggregate([
-    { $match: { productId: { $in: productIds } } },
+   // getRatingMap: thêm isHidden vào $match
+{ $match: { productId: { $in: productIds }, isHidden: { $ne: true } } },
     { $group: { _id: "$productId", avgRating: { $avg: "$rating" }, totalReviews: { $sum: 1 } } },
   ]);
 
@@ -29,7 +30,8 @@ async function attachRatings(products) {
 // Danh sách đánh giá của 1 sản phẩm, kèm tên + avatar người đánh giá
 async function getFeedbackByProduct(productId) {
   const feedbacks = await feedbackModel
-    .find({ productId })
+    // getFeedbackByProduct: thêm isHidden vào find
+    .find({ productId, isHidden: { $ne: true } })
     .populate("userId", "fullName avatar")
     .sort({ createdAt: -1 })
     .lean();
@@ -42,6 +44,9 @@ async function getFeedbackByProduct(productId) {
     createdAt: item.createdAt,
     name: item.userId?.fullName || "Người dùng ẩn danh",
     avatar: item.userId?.avatar || "",
+    adminReply: item.adminReply?.content
+      ? { content: item.adminReply.content, repliedAt: item.adminReply.repliedAt }
+      : null,
   }));
 }
 

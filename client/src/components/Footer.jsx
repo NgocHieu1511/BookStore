@@ -13,18 +13,18 @@ function Footer() {
             </h2>
 
             <p className="text-sm text-gray-600 leading-relaxed mt-4">
-              Lầu 5, 387-389 Hai Bà Trưng, Quận 3, TP. HCM
+              Thôn Đại Phùng, xã Đan Phượng, TP. Hà Nội, Việt Nam
             </p>
 
             <p className="text-sm text-gray-600 leading-relaxed mt-2">
-              Công Ty Cổ Phần Phát Hành Sách TP HCM - BOOKSTORE.COM
+              Công Ty Cổ Phần Phát Hành Sách Hà Nội - BOOKSTORE.COM
             </p>
 
             {/* CONTACT */}
             <div className="flex flex-col gap-3 mt-5">
               <div className="flex items-center gap-2 text-sm text-gray-600">
                 <MapPin size={18} className="text-red-700 shrink-0" />
-                <span>TP. Hồ Chí Minh, Việt Nam</span>
+                <span>TP. Hà Nội, Việt Nam</span>
               </div>
 
               <div className="flex items-center gap-2 text-sm text-gray-600">

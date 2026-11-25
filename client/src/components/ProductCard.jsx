@@ -1,10 +1,11 @@
 import { Link } from "react-router-dom";
-
+import { getEffectiveDiscount } from "../utils/price";
 function ProductCard({ dataItem }) {
 
 
 // Phần trăm giảm giá
-const discount = dataItem?.discountProduct || 0;
+// const discount = dataItem?.discountProduct || 0;
+const discount = getEffectiveDiscount(dataItem); 
 
 // Giá gốc: giá nhập từ Admin
 const oldPrice = Number(dataItem?.priceProduct || 0);

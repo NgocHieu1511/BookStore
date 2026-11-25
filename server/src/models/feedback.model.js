@@ -11,6 +11,14 @@ const feedbackModel = new Schema(
     imagesFeedback: { type: [String], default: [] },
     content: { type: String, required: true, trim: true },
     rating: { type: Number, required: true, min: 1, max: 5, default: 5 },
+        // Admin ẩn đánh giá vi phạm (spam, chửi bậy...) thay vì xóa hẳn
+    isHidden: { type: Boolean, default: false },
+
+    // Phản hồi của shop
+    adminReply: {
+      content: { type: String, trim: true, default: "" },
+      repliedAt: { type: Date },
+    },
   },
   {
     timestamps: true,

@@ -23,6 +23,11 @@ const destroyImages = (urls) =>
       catch (error) { console.warn("Không thể xóa ảnh feedback:", error.message); }
     }),
   );
+const escapeRegex = (text) => text.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+
+const assertId = (id) => {
+  if (!mongoose.Types.ObjectId.isValid(id)) throw new BadRequestError("ID đánh giá không hợp lệ");
+};
 
 class FeedbackController {
   async createFeedback(req, res) {
@@ -101,6 +106,103 @@ class FeedbackController {
     const feedbacks = await feedbackModel.find({ userId: req.user }).select("paymentId productId").lean();
     return new OK({ message: "Lấy danh sách đánh giá của bạn thành công", metadata: feedbacks }).send(res);
   }
+    // GET /list?page=&limit=&rating=&isHidden=&replied=&search=
+  async getAllFeedback(req, res) {
+    const page = Math.max(parseInt(req.query.page, 10) || 1, 1);
+    const limit = Math.min(Math.max(parseInt(req.query.limit, 10) || 10, 1), 50);
+
+    const filter = {};
+    const rating = Number(req.query.rating);
+    if (Number.isInteger(rating) && rating >= 1 && rating <= 5) filter.rating = rating;
+
+    if (req.query.isHidden === "true") filter.isHidden = true;
+    if (req.query.isHidden === "false") filter.isHidden = { $ne: true };
+
+    if (req.query.replied === "true") filter["adminReply.content"] = { $nin: [null, ""] };
+    if (req.query.replied === "false") filter["adminReply.content"] = { $in: [null, ""] };
+
+    if (req.query.search?.trim()) {
+      filter.content = new RegExp(escapeRegex(req.query.search.trim()), "i");
+    }
+
+    const [feedbacks, total] = await Promise.all([
+      feedbackModel
+        .find(filter)
+        .populate("userId", "fullName email avatar")
+        .populate("productId", "nameProduct imagesProduct")
+        .sort({ createdAt: -1 })
+        .skip((page - 1) * limit)
+        .limit(limit)
+        .lean(),
+      feedbackModel.countDocuments(filter),
+    ]);
+
+    return new OK({
+      message: "Lấy danh sách đánh giá thành công",
+      metadata: {
+        feedbacks,
+        pagination: { page, limit, total, totalPages: Math.ceil(total / limit) },
+      },
+    }).send(res);
+  }
+
+  // PATCH /hide/:id   body: { isHidden: true | false }
+  async toggleHidden(req, res) {
+    const { id } = req.params;
+    assertId(id);
+    const { isHidden } = req.body || {};
+    if (typeof isHidden !== "boolean") throw new BadRequestError("isHidden phải là true hoặc false");
+
+    const feedback = await feedbackModel.findByIdAndUpdate(id, { isHidden }, { new: true });
+    if (!feedback) throw new NotFoundError("Không tìm thấy đánh giá");
+
+    return new OK({ message: isHidden ? "Đã ẩn đánh giá" : "Đã hiện đánh giá", metadata: feedback }).send(res);
+  }
+
+  // POST /reply/:id   body: { content }
+  async replyFeedback(req, res) {
+    const { id } = req.params;
+    assertId(id);
+    const content = req.body?.content?.trim();
+    if (!content) throw new BadRequestError("Nội dung phản hồi không được để trống");
+    if (content.length > 300) throw new BadRequestError("Phản hồi tối đa 300 ký tự");
+
+    const feedback = await feedbackModel.findByIdAndUpdate(
+      id,
+      { adminReply: { content, repliedAt: new Date() } },
+      { new: true },
+    );
+    if (!feedback) throw new NotFoundError("Không tìm thấy đánh giá");
+
+    return new OK({ message: "Đã gửi phản hồi", metadata: feedback }).send(res);
+  }
+
+  // DELETE /delete/:id
+  async deleteFeedback(req, res) {
+    const { id } = req.params;
+    assertId(id);
+
+    const feedback = await feedbackModel.findByIdAndDelete(id);
+    if (!feedback) throw new NotFoundError("Không tìm thấy đánh giá");
+
+    await destroyImages(feedback.imagesFeedback || []); // dọn ảnh trên Cloudinary
+    return new OK({ message: "Đã xóa đánh giá" }).send(res);
+  }
+async getLatestFeedback(req, res) {
+    try {
+      const feedbacks = await feedbackModel
+        .find({ rating: { $gte: 4 }, isHidden: { $ne: true } })  
+        .sort({ createdAt: -1 })
+        .limit(8)
+        .populate("userId", "fullName avatar")
+        .populate("productId", "nameProduct imagesProduct");
+
+      return res.status(200).json({ message: "Success", metadata: feedbacks });
+    } catch (error) {
+      return res.status(500).json({ message: error.message });
+    }
+  }
 }
+  
 
 module.exports = new FeedbackController();

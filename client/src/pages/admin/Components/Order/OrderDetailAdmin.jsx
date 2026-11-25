@@ -20,7 +20,7 @@ import { requestAdminPaymentDetail } from "../../../../config/paymentRequest";
 const STATUS_MAP = {
   pending: { label: "Chờ xác nhận", color: "gold" },
   confirmed: { label: "Đã xác nhận", color: "blue" },
-
+ shipping: { label: "Đang giao hàng", color: "purple" },
   delivered: { label: "Đã giao hàng", color: "cyan" },
   completed: { label: "Hoàn thành", color: "green" },
   cancelled: { label: "Đã hủy", color: "red" },
@@ -34,6 +34,7 @@ const PAYMENT_MAP = {
 const STATUS_LABELS = {
   pending: "Chờ xác nhận",
   confirmed: "Đã xác nhận",
+  shipping: "Đang giao hàng",
   delivered: "Đã giao hàng",
   completed: "Hoàn thành",
   cancelled: "Đã hủy",

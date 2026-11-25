@@ -25,6 +25,7 @@ function Blog() {
     const [type, setType] = useState(0);
     const [dataBlog, setDataBlog] = useState([]);
     const [loading, setLoading] = useState(false);
+    const [editingBlog, setEditingBlog] = useState(null);
 
     // Lấy danh sách bài viết
     const fetchData = async () => {
@@ -45,8 +46,8 @@ function Blog() {
     };
 
     useEffect(() => {
-        fetchData();
-    }, []);
+    if (type === 0) fetchData();
+}, [type]);
 
     // Xóa bài viết
     const handleDeleteBlog = async (idBlog) => {
@@ -69,6 +70,15 @@ function Blog() {
             );
         }
     };
+    const handleEditBlog = (blog) => {
+    setEditingBlog(blog);
+    setType(2); // 0: danh sách, 1: thêm, 2: sửa
+};
+
+const handleEditSuccess = () => {
+    setEditingBlog(null);
+    setType(0); // quay lại danh sách (danh sách sẽ tự tải lại ở bước 5.4)
+};
 
     return (
         <div className="min-h-screen bg-gray-50 p-4 md:p-6">
@@ -237,21 +247,27 @@ function Blog() {
 
                                                 {/* ACTION */}
                                                 <TableCell align="center">
-                                                    <Button
-                                                        onClick={() =>
-                                                            handleDeleteBlog(blog._id)
-                                                        }
-                                                        color="error"
-                                                        variant="contained"
-                                                        size="small"
-                                                        sx={{
-                                                            textTransform: 'none',
-                                                            fontWeight: 600,
-                                                        }}
-                                                    >
-                                                        Xóa bài viết
-                                                    </Button>
-                                                </TableCell>
+    <div className="flex justify-center gap-2">
+        <Button
+            onClick={() => handleEditBlog(blog)}
+            variant="outlined"
+            size="small"
+            sx={{ textTransform: 'none', fontWeight: 600 }}
+        >
+            Sửa
+        </Button>
+
+        <Button
+            onClick={() => handleDeleteBlog(blog._id)}
+            color="error"
+            variant="contained"
+            size="small"
+            sx={{ textTransform: 'none', fontWeight: 600 }}
+        >
+            Xóa bài viết
+        </Button>
+    </div>
+</TableCell>
 
                                             </TableRow>
 
@@ -265,12 +281,21 @@ function Blog() {
 
                     </div>
 
-                ) : (
+               ) : type === 1 ? (
 
-                    /* ADD BLOG */
-                    <AddBlog />
+    /* THÊM BÀI VIẾT */
+    <AddBlog onSuccess={() => setType(0)} />
 
-                )}
+) : (
+
+    /* SỬA BÀI VIẾT */
+    <AddBlog
+        key={editingBlog?._id}
+        blog={editingBlog}
+        onSuccess={handleEditSuccess}
+    />
+
+)}
 
             </div>
         </div>

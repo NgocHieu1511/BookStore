@@ -8,6 +8,8 @@ const feedbackRoutes = require("./feedback.routes");
 const blogsRoutes = require("./blogs.routes");
 const messageRoutes = require("./message.routes");
 const chatbotRoutes = require("./chatbot.routes");
+const flashSaleRoutes = require("./flashSale.routes");
+const statisticalRoutes = require("./statistical.routes");
 
 function routes(app) {
   app.use("/api/user", usersRoutes);
@@ -20,5 +22,7 @@ function routes(app) {
   app.use("/api/blogs", blogsRoutes);
   app.use("/api/message", messageRoutes);
   app.use("/api/chatbot", chatbotRoutes);
+  app.use("/api/flash-sale", flashSaleRoutes);
+  app.use("/api/statistical", statisticalRoutes);
 }
 module.exports = routes;

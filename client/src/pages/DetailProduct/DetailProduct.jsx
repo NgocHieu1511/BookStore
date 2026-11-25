@@ -1,7 +1,7 @@
 import Header from "../../components/Header";
 import Footer from "../../components/Footer";
 import { useParams, useNavigate } from "react-router-dom";
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import { productDetail } from "../../config/productRequest";
 import {  requestGetHeartProduct,requestHeartProduct } from '../../config/userRequest';
 
@@ -13,13 +13,15 @@ import {
   Minus,
   Plus,
   Zap,
+  ChevronDown,
+  ChevronUp,
 } from "lucide-react";
 import { useStore } from "../../hooks/useStore";
 import { requestAddToCart } from "../../config/CartRequest";
 import { message } from "antd";
 import CustomerReviews from "./components/CustomerReviews";
 import RelatedProducts from "./components/RelatedProducts";
-
+const DESC_MAX_HEIGHT = 300;
 function DetailProduct() {
   const { id } = useParams();
   const navigate = useNavigate();
@@ -35,6 +37,16 @@ const [relatedProducts, setRelatedProducts] = useState([]);
 
 // Danh sách đánh giá khách hàng
 const [feedbackUser, setFeedbackUser] = useState([]);
+const [showFullDesc, setShowFullDesc] = useState(false); // false = đang thu gọn
+const [isLongDesc, setIsLongDesc] = useState(false);     // mô tả có đủ dài để cần nút không
+const descRef = useRef(null);
+const reviewCount = feedbackUser.length;
+
+const averageRating =
+  reviewCount > 0
+    ? feedbackUser.reduce((sum, item) => sum + Number(item?.rating || 0), 0) /
+      reviewCount
+    : 0;
   
 
 
@@ -103,7 +115,12 @@ const [feedbackUser, setFeedbackUser] = useState([]);
 
     return undefined;
   }, [id]);
-
+useEffect(() => {
+  if (descRef.current) {
+    setIsLongDesc(descRef.current.scrollHeight > DESC_MAX_HEIGHT);
+  }
+  setShowFullDesc(false);
+}, [product?.descriptionProduct]);
   // ==============================
   // LOADING
   // ==============================
@@ -151,6 +168,8 @@ const [feedbackUser, setFeedbackUser] = useState([]);
   const stock = Number(product?.stockProduct || 0);
 
   const description = product?.descriptionProduct || "";
+
+
 
   const metadata = product?.metadata || {};
 
@@ -432,15 +451,30 @@ const handleAddToCart = async () => {
             </div>
 
             {/* RATING */}
-            <div className="mb-4 flex items-center gap-4 text-sm text-gray-500">
-              <div className="flex text-yellow-400">
-                {[1, 2, 3, 4, 5].map((star) => (
-                  <span key={star}>★</span>
-                ))}
-              </div>
+<div className="mb-4 flex items-center gap-3 text-sm text-gray-500">
+  <div className="flex">
+    {[1, 2, 3, 4, 5].map((star) => (
+      <span
+        key={star}
+        className={
+          star <= Math.round(averageRating)
+            ? "text-yellow-400"
+            : "text-gray-300"
+        }
+      >
+        ★
+      </span>
+    ))}
+  </div>
 
-              <span>(0 đánh giá)</span>
-            </div>
+  {reviewCount > 0 && (
+    <span className="font-medium text-gray-700">
+      {averageRating.toFixed(1)}
+    </span>
+  )}
+
+  <span>({reviewCount} đánh giá)</span>
+</div>
 
             {/* FLASH SALE */}
             {discount > 0 && (
@@ -495,7 +529,7 @@ const handleAddToCart = async () => {
 
               <div className="mb-3 text-sm">
                 Giao hàng đến <span className="font-bold">Địa chỉ của bạn</span>
-                <button className="ml-2 text-blue-500 hover:underline">
+                <button className="ml-2 text-blue-500 hover:underline" onClick={() => navigate("/address")}>
                   Thay đổi
                 </button>
               </div>
@@ -517,7 +551,7 @@ const handleAddToCart = async () => {
               </div>
             </div>
 
-            {/* PROMOTION */}
+            {/* PROMOTION
             <div className="mb-6 border-b border-gray-100 pb-6">
               <div className="mb-3 flex items-center gap-2 text-sm">
                 <span className="font-bold">Ưu đãi liên quan</span>
@@ -540,7 +574,7 @@ const handleAddToCart = async () => {
                   🎁 Hộp quà tặng
                 </span>
               </div>
-            </div>
+            </div> */}
 
             {/* QUANTITY */}
             <div className="flex items-center gap-4">
@@ -661,19 +695,46 @@ const handleAddToCart = async () => {
         ============================== */}
 
         <div className="mb-6 rounded-lg bg-white p-6 shadow-sm">
-          <h2 className="mb-4 text-lg font-bold">Mô tả sản phẩm</h2>
+  <h2 className="mb-4 text-lg font-bold">Mô tả sản phẩm</h2>
 
-          <div className="text-sm leading-relaxed text-gray-700">
-            <p className="mb-3 font-bold">{name}</p>
+  <div className="text-sm leading-relaxed text-gray-700">
+    <p className="mb-3 font-bold">{name}</p>
 
-            <div
-              className="prose max-w-none"
-              dangerouslySetInnerHTML={{
-                __html: description || "Chưa có mô tả sản phẩm.",
-              }}
-            />
-          </div>
-        </div>
+    <div className="relative">
+      <div
+        ref={descRef}
+        className="prose max-w-none overflow-hidden transition-all duration-300"
+        style={{
+          maxHeight: showFullDesc || !isLongDesc ? "none" : `${DESC_MAX_HEIGHT}px`,
+        }}
+        dangerouslySetInnerHTML={{
+          __html: description || "Chưa có mô tả sản phẩm.",
+        }}
+      />
+
+      {/* Lớp mờ dần ở đáy khi đang thu gọn */}
+      {isLongDesc && !showFullDesc && (
+        <div className="pointer-events-none absolute bottom-0 left-0 h-20 w-full bg-gradient-to-t from-white to-transparent" />
+      )}
+    </div>
+
+    {isLongDesc && (
+      <div className="mt-3 text-center">
+        <button
+          type="button"
+          onClick={() => setShowFullDesc((prev) => !prev)}
+          className="inline-flex items-center gap-1 rounded-md border border-gray-300 px-4 py-1.5 text-sm font-medium text-gray-700 hover:bg-gray-50"
+        >
+          {showFullDesc ? (
+            <>Thu gọn <ChevronUp size={16} /></>
+          ) : (
+            <>Xem thêm <ChevronDown size={16} /></>
+          )}
+        </button>
+      </div>
+    )}
+  </div>
+</div>
         {/* ==============================
     SẢN PHẨM LIÊN QUAN
 ============================== */}

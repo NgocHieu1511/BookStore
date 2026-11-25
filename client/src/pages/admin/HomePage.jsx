@@ -10,7 +10,7 @@ import DiscountProduct from './Components/DiscountProduct/DiscountProduct';
 import ControllerUser from './Components/Users/User';
 import Blog from './Components/Blog/Blog';
 import DashboardOverview from './DashboardOverview';
-
+import Feedback from './Components/Feedback/Feedback';
 function HomePage({ type }) {
     useEffect(() => {
         document.title = 'Trang chủ';
@@ -36,6 +36,8 @@ function HomePage({ type }) {
                 <DashboardOverview />
             ) : type === 5 ? (
                 <Blog />
+            ) : type === 9 ? (
+                <Feedback />
             ) : null}
         </div>
     );
